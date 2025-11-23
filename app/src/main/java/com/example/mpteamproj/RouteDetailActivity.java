@@ -17,9 +17,17 @@ import com.kakao.vectormap.MapLifeCycleCallback;
 import com.kakao.vectormap.MapView;
 import com.kakao.vectormap.camera.CameraUpdate;
 import com.kakao.vectormap.camera.CameraUpdateFactory;
-import com.kakao.vectormap.label.Label;
 import com.kakao.vectormap.label.LabelLayer;
 import com.kakao.vectormap.label.LabelOptions;
+import com.kakao.vectormap.shape.MapPoints;
+import com.kakao.vectormap.shape.Polyline;
+import com.kakao.vectormap.shape.PolylineOptions;
+import com.kakao.vectormap.shape.ShapeLayer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class RouteDetailActivity extends AppCompatActivity {
 
@@ -32,9 +40,12 @@ public class RouteDetailActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private KakaoMap kakaoMap;
+    private LabelLayer labelLayer;
+    private ShapeLayer shapeLayer;
+    private Polyline routePolyline;
 
-    private LatLng startLatLng;
-    private LatLng endLatLng;
+    // 전체 경로 포인트 (출발 + 경유 + 도착)
+    private final List<LatLng> routePoints = new ArrayList<>();
 
     private boolean mapReady = false;
     private boolean routeLoaded = false;
@@ -79,6 +90,8 @@ public class RouteDetailActivity extends AppCompatActivity {
             @Override
             public void onMapReady(@NonNull KakaoMap map) {
                 kakaoMap = map;
+                labelLayer = kakaoMap.getLabelManager().getLayer();
+                shapeLayer = kakaoMap.getShapeManager().getLayer();
                 mapReady = true;
                 updateMapIfReady();
             }
@@ -115,16 +128,59 @@ public class RouteDetailActivity extends AppCompatActivity {
         Double eLat = doc.getDouble("endLat");
         Double eLng = doc.getDouble("endLng");
 
+        tvDetailRouteTitle.setText(title.isEmpty() ? "루트 상세" : title);
+
         if (sLat != null && sLng != null) {
-            startLatLng = LatLng.from(sLat, sLng);
-        }
-        if (eLat != null && eLng != null) {
-            endLatLng = LatLng.from(eLat, eLng);
+            tvDetailStart.setText(String.format(
+                    Locale.getDefault(),
+                    "출발: %s (%.5f, %.5f)",
+                    startPlace, sLat, sLng
+            ));
+        } else {
+            tvDetailStart.setText("출발: 정보 없음");
         }
 
-        tvDetailRouteTitle.setText(title.isEmpty() ? "루트 상세" : title);
-        tvDetailStart.setText("시작 지점: " + (startPlace.isEmpty() ? "좌표 (" + sLat + ", " + sLng + ")" : startPlace));
-        tvDetailEnd.setText("도착 지점: " + (endPlace.isEmpty() ? "좌표 (" + eLat + ", " + eLng + ")" : endPlace));
+        if (eLat != null && eLng != null) {
+            tvDetailEnd.setText(String.format(
+                    Locale.getDefault(),
+                    "도착: %s (%.5f, %.5f)",
+                    endPlace, eLat, eLng
+            ));
+        } else {
+            tvDetailEnd.setText("도착: 정보 없음");
+        }
+
+        // points 배열에서 전체 경로 복원
+        routePoints.clear();
+        Object rawPoints = doc.get("points");
+        if (rawPoints instanceof List) {
+            List<?> list = (List<?>) rawPoints;
+            for (Object o : list) {
+                if (o instanceof Map) {
+                    Map<?, ?> m = (Map<?, ?>) o;
+                    Object latObj = m.get("lat");
+                    Object lngObj = m.get("lng");
+                    if (latObj instanceof Number && lngObj instanceof Number) {
+                        double lat = ((Number) latObj).doubleValue();
+                        double lng = ((Number) lngObj).doubleValue();
+                        routePoints.add(LatLng.from(lat, lng));
+                    }
+                }
+            }
+        }
+
+        // 혹시 points가 없다면 최소 start/end로라도 구성
+        if (routePoints.isEmpty()) {
+            if (sLat != null && sLng != null) {
+                routePoints.add(LatLng.from(sLat, sLng));
+            }
+            if (eLat != null && eLng != null) {
+                LatLng end = LatLng.from(eLat, eLng);
+                if (routePoints.isEmpty() || !routePoints.get(routePoints.size() - 1).equals(end)) {
+                    routePoints.add(end);
+                }
+            }
+        }
 
         routeLoaded = true;
         updateMapIfReady();
@@ -132,42 +188,45 @@ public class RouteDetailActivity extends AppCompatActivity {
 
     private void updateMapIfReady() {
         if (!mapReady || !routeLoaded || kakaoMap == null) return;
-        if (kakaoMap.getLabelManager() == null) return;
+        if (labelLayer == null || shapeLayer == null) return;
 
-        LabelLayer layer = kakaoMap.getLabelManager().getLayer();
-        layer.removeAll();
+        labelLayer.removeAll();
+        shapeLayer.removeAll();
+        routePolyline = null;
 
-        // 시작/도착 마커 찍기
-        if (startLatLng != null) {
-            LabelOptions startOptions = LabelOptions
-                    .from(startLatLng)
-                    .setStyles(android.R.drawable.ic_menu_mylocation);
-            Label startLabel = layer.addLabel(startOptions);
+        // 1) 전체 Polyline 그리기 (중간 경유 포함)
+        if (routePoints.size() >= 2) {
+            MapPoints mapPoints = MapPoints.fromLatLng(routePoints);
+            PolylineOptions options =
+                    PolylineOptions.from(mapPoints, 6f, 0xFF00796B);
+            routePolyline = shapeLayer.addPolyline(options);
         }
 
-        if (endLatLng != null) {
-            LabelOptions endOptions = LabelOptions
-                    .from(endLatLng)
-                    .setStyles(android.R.drawable.ic_menu_mylocation);
-            Label endLabel = layer.addLabel(endOptions);
+        // 2) 핀은 출발/도착만
+        if (!routePoints.isEmpty()) {
+            LatLng start = routePoints.get(0);
+            LabelOptions startOpt = LabelOptions.from(start)
+                    .setStyles(android.R.drawable.presence_online); // 초록
+            labelLayer.addLabel(startOpt);
         }
 
-        // 카메라를 두 점의 중간쯤으로 이동
-        LatLng center = null;
-        if (startLatLng != null && endLatLng != null) {
-            double cLat = (startLatLng.latitude + endLatLng.latitude) / 2.0;
-            double cLng = (startLatLng.longitude + endLatLng.longitude) / 2.0;
-            center = LatLng.from(cLat, cLng);
-        } else if (startLatLng != null) {
-            center = startLatLng;
-        } else if (endLatLng != null) {
-            center = endLatLng;
+        if (routePoints.size() >= 2) {
+            LatLng end = routePoints.get(routePoints.size() - 1);
+            LabelOptions endOpt = LabelOptions.from(end)
+                    .setStyles(android.R.drawable.presence_busy); // 빨강
+            labelLayer.addLabel(endOpt);
         }
 
-        if (center != null) {
-            CameraUpdate cameraUpdate =
-                    CameraUpdateFactory.newCenterPosition(center, 10); // 줌 레벨은 적당히
-            kakaoMap.moveCamera(cameraUpdate);
+        // 3) 여기서는 카메라를 루트 전체에 맞춰 이동 (둘러보기 전용)
+        if (!routePoints.isEmpty()) {
+            LatLng[] arr = routePoints.toArray(new LatLng[0]);
+            CameraUpdate update;
+            if (arr.length == 1) {
+                update = CameraUpdateFactory.newCenterPosition(arr[0], 15);
+            } else {
+                update = CameraUpdateFactory.fitMapPoints(arr, 80);
+            }
+            kakaoMap.moveCamera(update);
         }
     }
 

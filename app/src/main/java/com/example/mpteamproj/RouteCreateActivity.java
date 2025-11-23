@@ -61,7 +61,7 @@ public class RouteCreateActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_route_create);
 
-        // View 바인딩 (XML id와 1:1 매칭)
+        // XML id와 1:1 매칭
         etRouteTitle = findViewById(R.id.etRouteTitle);
         tvPointCount = findViewById(R.id.tvPointCount);
         tvStartPoint = findViewById(R.id.tvStartPoint);
@@ -100,13 +100,13 @@ public class RouteCreateActivity extends AppCompatActivity {
                 labelLayer = kakaoMap.getLabelManager().getLayer();
                 shapeLayer = kakaoMap.getShapeManager().getLayer();
 
-                // 기본 카메라 위치 (서울 시청 근처)
+                // 초기 카메라 위치 (서울 시청 근처) - 이후로는 안 움직임
                 LatLng seoul = LatLng.from(37.5665, 126.9780);
                 CameraUpdate update =
                         CameraUpdateFactory.newCenterPosition(seoul, 10);
                 kakaoMap.moveCamera(update);
 
-                // 지도 클릭 리스너: 지점 추가
+                // 지도 클릭 시 지점 추가 (카메라는 여기서 더 이상 안 움직임)
                 kakaoMap.setOnMapClickListener((kMap, position, screenPoint, poi) -> {
                     addRoutePoint(position);
                 });
@@ -114,7 +114,7 @@ public class RouteCreateActivity extends AppCompatActivity {
         });
     }
 
-    // 버튼 클릭 리스너 설정
+    // 버튼 리스너들
     private void initButtons() {
         // 마지막 지점 되돌리기
         btnUndoPoint.setOnClickListener(v -> {
@@ -144,7 +144,7 @@ public class RouteCreateActivity extends AppCompatActivity {
         redrawRoute();
     }
 
-    // 지점 수/출발/도착 텍스트 갱신
+    // 하단 텍스트 갱신
     private void updateInfoTexts() {
         int size = routePoints.size();
         tvPointCount.setText("지점: " + size + "개");
@@ -174,45 +174,44 @@ public class RouteCreateActivity extends AppCompatActivity {
         }
     }
 
-    // 라벨 + 폴리라인 + 카메라까지 전체 다시 그림
+    // 라벨 + 폴리라인 다시 그리기 (카메라는 건드리지 않음)
     private void redrawRoute() {
         if (kakaoMap == null || labelLayer == null || shapeLayer == null) return;
 
-        // 하단 텍스트 갱신
         updateInfoTexts();
 
-        // 기존 라벨/선 제거
         labelLayer.removeAll();
         shapeLayer.removeAll();
         routePolyline = null;
 
-        // 지점마다 라벨(아이콘) 추가
-        for (LatLng p : routePoints) {
-            LabelOptions options = LabelOptions
-                    .from(p)
-                    .setStyles(android.R.drawable.ic_menu_mylocation);
+        // 출발=초록, 도착=빨강, 경유=기본 아이콘
+        for (int i = 0; i < routePoints.size(); i++) {
+            LatLng p = routePoints.get(i);
+
+            LabelOptions options = LabelOptions.from(p);
+            if (i == 0) {
+                // 출발: 초록색 (presence_online)
+                options.setStyles(android.R.drawable.presence_online);
+            } else if (i == routePoints.size() - 1) {
+                // 도착: 빨간색 (presence_busy)
+                options.setStyles(android.R.drawable.presence_busy);
+            } else {
+                // 경유: 기본 위치 아이콘
+                options.setStyles(android.R.drawable.ic_menu_mylocation);
+            }
             labelLayer.addLabel(options);
         }
 
         // 선 그리기 (2개 이상일 때만)
         if (routePoints.size() >= 2) {
             MapPoints mapPoints = MapPoints.fromLatLng(routePoints);
+            // (lineWidth=6, color=0xFF00796B 같은 느낌)
             PolylineOptions polyOptions =
                     PolylineOptions.from(mapPoints, 6f, 0xFF00796B);
             routePolyline = shapeLayer.addPolyline(polyOptions);
         }
 
-        // 카메라 이동 (전체 지점이 보이도록)
-        if (!routePoints.isEmpty()) {
-            LatLng[] arr = routePoints.toArray(new LatLng[0]);
-            CameraUpdate update;
-            if (arr.length == 1) {
-                update = CameraUpdateFactory.newCenterPosition(arr[0], 15);
-            } else {
-                update = CameraUpdateFactory.fitMapPoints(arr, 80);
-            }
-            kakaoMap.moveCamera(update);
-        }
+        // ❌ 여기서는 카메라 moveCamera 절대 안 함
     }
 
     // Firestore에 루트 저장
@@ -225,7 +224,8 @@ public class RouteCreateActivity extends AppCompatActivity {
         }
 
         if (routePoints.size() < 2) {
-            Toast.makeText(this, "출발과 도착을 포함해 최소 2개 지점을 선택해주세요.",
+            Toast.makeText(this,
+                    "출발과 도착을 포함해 최소 2개 지점을 선택해주세요.",
                     Toast.LENGTH_SHORT).show();
             return;
         }
