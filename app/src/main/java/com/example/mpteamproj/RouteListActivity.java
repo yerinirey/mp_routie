@@ -41,6 +41,13 @@ public class RouteListActivity extends AppCompatActivity {
         adapter = new RouteAdapter(items);
         rvRoutes.setAdapter(adapter);
 
+        adapter.setOnItemClickListener(item -> {
+            if (item.getId() == null || item.getId().isEmpty()) return;
+            Intent intent = new Intent(RouteListActivity.this, RouteDetailActivity.class);
+            intent.putExtra(RouteDetailActivity.EXTRA_ROUTE_ID, item.getId());
+            startActivity(intent);
+        });
+
         btnGoCreateRoute.setOnClickListener(v -> {
             Intent intent = new Intent(RouteListActivity.this, RouteCreateActivity.class);
             startActivity(intent);

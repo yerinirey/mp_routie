@@ -12,10 +12,19 @@ import java.util.List;
 
 public class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHolder> {
 
+    public interface OnItemClickListener {
+        void onItemClick(RoutePost item);
+    }
+
     private final List<RoutePost> items;
+    private OnItemClickListener listener;
 
     public RouteAdapter(List<RoutePost> items) {
         this.items = items;
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -33,6 +42,12 @@ public class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHol
         String info = post.getStartPlace() + " → " + post.getEndPlace();
         holder.tvInfo.setText(info);
         holder.tvMemo.setText(post.getMemo());
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(post);
+            }
+        });
     }
 
     @Override
