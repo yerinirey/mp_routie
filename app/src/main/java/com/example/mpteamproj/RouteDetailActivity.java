@@ -1,7 +1,9 @@
 package com.example.mpteamproj;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +39,7 @@ public class RouteDetailActivity extends AppCompatActivity {
     private TextView tvDetailStart;
     private TextView tvDetailEnd;
     private MapView detailMapView;
+    private Button btnCreateLightning;
 
     private FirebaseFirestore db;
     private KakaoMap kakaoMap;
@@ -44,11 +47,11 @@ public class RouteDetailActivity extends AppCompatActivity {
     private ShapeLayer shapeLayer;
     private Polyline routePolyline;
 
-    // 전체 경로 포인트 (출발 + 경유 + 도착)
     private final List<LatLng> routePoints = new ArrayList<>();
 
     private boolean mapReady = false;
     private boolean routeLoaded = false;
+    private String routeId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,14 +62,26 @@ public class RouteDetailActivity extends AppCompatActivity {
         tvDetailStart = findViewById(R.id.tvDetailStart);
         tvDetailEnd = findViewById(R.id.tvDetailEnd);
         detailMapView = findViewById(R.id.detailMapView);
+        btnCreateLightning = findViewById(R.id.btnCreateLightning);
 
         db = FirebaseFirestore.getInstance();
 
-        String routeId = getIntent().getStringExtra(EXTRA_ROUTE_ID);
+        routeId = getIntent().getStringExtra(EXTRA_ROUTE_ID);
         if (routeId == null || routeId.isEmpty()) {
-            Toast.makeText(this, "잘못된 루트 ID입니다.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "루트 정보가 없습니다.", Toast.LENGTH_SHORT).show();
             finish();
             return;
+        }
+
+        if (btnCreateLightning != null) {
+            btnCreateLightning.setOnClickListener(v -> {
+                Intent intent = new Intent(RouteDetailActivity.this, LightningCreateActivity.class);
+                intent.putExtra("routeId", routeId);
+                intent.putExtra("routeTitle", tvDetailRouteTitle.getText().toString());
+                intent.putExtra("routeStart", tvDetailStart.getText().toString());
+                intent.putExtra("routeEnd", tvDetailEnd.getText().toString());
+                startActivity(intent);
+            });
         }
 
         initMap();
@@ -76,9 +91,7 @@ public class RouteDetailActivity extends AppCompatActivity {
     private void initMap() {
         detailMapView.start(new MapLifeCycleCallback() {
             @Override
-            public void onMapDestroy() {
-                // nothing
-            }
+            public void onMapDestroy() {}
 
             @Override
             public void onMapError(@NonNull Exception error) {
@@ -150,7 +163,6 @@ public class RouteDetailActivity extends AppCompatActivity {
             tvDetailEnd.setText("도착: 정보 없음");
         }
 
-        // points 배열에서 전체 경로 복원
         routePoints.clear();
         Object rawPoints = doc.get("points");
         if (rawPoints instanceof List) {
@@ -169,14 +181,14 @@ public class RouteDetailActivity extends AppCompatActivity {
             }
         }
 
-        // 혹시 points가 없다면 최소 start/end로라도 구성
         if (routePoints.isEmpty()) {
             if (sLat != null && sLng != null) {
                 routePoints.add(LatLng.from(sLat, sLng));
             }
             if (eLat != null && eLng != null) {
                 LatLng end = LatLng.from(eLat, eLng);
-                if (routePoints.isEmpty() || !routePoints.get(routePoints.size() - 1).equals(end)) {
+                if (routePoints.isEmpty()
+                        || !routePoints.get(routePoints.size() - 1).equals(end)) {
                     routePoints.add(end);
                 }
             }
@@ -194,7 +206,6 @@ public class RouteDetailActivity extends AppCompatActivity {
         shapeLayer.removeAll();
         routePolyline = null;
 
-        // 1) 전체 Polyline 그리기 (중간 경유 포함)
         if (routePoints.size() >= 2) {
             MapPoints mapPoints = MapPoints.fromLatLng(routePoints);
             PolylineOptions options =
@@ -202,22 +213,20 @@ public class RouteDetailActivity extends AppCompatActivity {
             routePolyline = shapeLayer.addPolyline(options);
         }
 
-        // 2) 핀은 출발/도착만
         if (!routePoints.isEmpty()) {
             LatLng start = routePoints.get(0);
             LabelOptions startOpt = LabelOptions.from(start)
-                    .setStyles(android.R.drawable.presence_online); // 초록
+                    .setStyles(android.R.drawable.presence_online);
             labelLayer.addLabel(startOpt);
         }
 
         if (routePoints.size() >= 2) {
             LatLng end = routePoints.get(routePoints.size() - 1);
             LabelOptions endOpt = LabelOptions.from(end)
-                    .setStyles(android.R.drawable.presence_busy); // 빨강
+                    .setStyles(android.R.drawable.presence_busy);
             labelLayer.addLabel(endOpt);
         }
 
-        // 3) 여기서는 카메라를 루트 전체에 맞춰 이동 (둘러보기 전용)
         if (!routePoints.isEmpty()) {
             LatLng[] arr = routePoints.toArray(new LatLng[0]);
             CameraUpdate update;

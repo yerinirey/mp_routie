@@ -1,30 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="12dp">
+    android:layout_margin="8dp"
+    card_view:cardCornerRadius="8dp"
+    card_view:cardElevation="2dp">
 
-    <TextView
-        android:id="@+id/tvLightningTitle"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="번개 제목"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:padding="12dp"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvLightningInfo"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="장소 · 시간"
-        android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/tvLightningTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="4dp" />
+        <TextView
+            android:id="@+id/tvLightningItemTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="번개 제목"
+            android:textStyle="bold"
+            android:textSize="16sp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/tvLightningItemDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="간단 설명"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvLightningItemRouteTag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="루트 연결됨"
+            android:textSize="12sp"
+            android:textColor="#00796B"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

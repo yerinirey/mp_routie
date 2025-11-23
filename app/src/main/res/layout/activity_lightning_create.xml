@@ -1,59 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="24dp">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/tvCreateLightningTitle"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="번개 만들기"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="24dp" />
+        android:padding="16dp"
+        android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/etLightningTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="제목"
-        app:layout_constraintTop_toBottomOf="@id/tvCreateLightningTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp" />
+        <TextView
+            android:id="@+id/tvLinkedRoute"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="연결된 루트 없음"
+            android:textSize="14sp"
+            android:paddingBottom="8dp" />
 
-    <EditText
-        android:id="@+id/etLightningPlace"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="장소"
-        app:layout_constraintTop_toBottomOf="@id/etLightningTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        <EditText
+            android:id="@+id/etLightningTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="번개 제목"
+            android:inputType="text"
+            android:padding="8dp" />
 
-    <EditText
-        android:id="@+id/etLightningTime"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="시간 (예: 오늘 19:00)"
-        app:layout_constraintTop_toBottomOf="@id/etLightningPlace"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        <EditText
+            android:id="@+id/etLightningDescription"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:hint="번개 설명 (시간, 준비물 등)"
+            android:gravity="top"
+            android:inputType="textMultiLine"
+            android:padding="8dp"
+            android:layout_marginTop="12dp" />
 
-    <Button
-        android:id="@+id/btnLightningSubmit"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="번개 등록"
-        app:layout_constraintTop_toBottomOf="@id/etLightningTime"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp" />
+        <Button
+            android:id="@+id/btnLightningSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="번개 생성"
+            android:layout_marginTop="16dp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+</ScrollView>

@@ -12,26 +12,47 @@ import java.util.List;
 
 public class LightningAdapter extends RecyclerView.Adapter<LightningAdapter.LightningViewHolder> {
 
+    public interface OnItemClickListener {
+        void onItemClick(LightningPost item);
+    }
+
     private final List<LightningPost> items;
+    private OnItemClickListener listener;
 
     public LightningAdapter(List<LightningPost> items) {
         this.items = items;
     }
 
+    public void setOnItemClickListener(OnItemClickListener l) {
+        this.listener = l;
+    }
+
     @NonNull
     @Override
     public LightningViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
+        View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_lightning, parent, false);
-        return new LightningViewHolder(view);
+        return new LightningViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull LightningViewHolder holder, int position) {
         LightningPost post = items.get(position);
         holder.tvTitle.setText(post.getTitle());
-        String info = post.getPlace() + " · " + post.getTimeText();
-        holder.tvInfo.setText(info);
+        holder.tvDesc.setText(post.getDescription());
+
+        if (post.getRouteId() != null && !post.getRouteId().isEmpty()) {
+            holder.tvRouteTag.setText("루트 연결됨");
+            holder.tvRouteTag.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvRouteTag.setVisibility(View.GONE);
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(post);
+            }
+        });
     }
 
     @Override
@@ -41,12 +62,14 @@ public class LightningAdapter extends RecyclerView.Adapter<LightningAdapter.Ligh
 
     static class LightningViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle;
-        TextView tvInfo;
+        TextView tvDesc;
+        TextView tvRouteTag;
 
-        public LightningViewHolder(@NonNull View itemView) {
+        LightningViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvTitle = itemView.findViewById(R.id.tvLightningTitle);
-            tvInfo = itemView.findViewById(R.id.tvLightningInfo);
+            tvTitle = itemView.findViewById(R.id.tvLightningItemTitle);
+            tvDesc = itemView.findViewById(R.id.tvLightningItemDesc);
+            tvRouteTag = itemView.findViewById(R.id.tvLightningItemRouteTag);
         }
     }
 }

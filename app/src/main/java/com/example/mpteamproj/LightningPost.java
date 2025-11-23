@@ -1,71 +1,42 @@
 package com.example.mpteamproj;
 
 public class LightningPost {
-
-    private String id;       // Firestore 문서 ID
+    private String id;
     private String title;
-    private String place;
-    private String timeText;
+    private String description;
     private String hostUid;
-    private long createdAt;
+    private Long createdAt;
+    private String routeId;
+    private String routeTitle;
+    private String routeStart;
+    private String routeEnd;
 
-    public LightningPost() {
-        // Firestore에서 객체로 변환할 때 필요
-    }
+    public LightningPost() {}
 
-    public LightningPost(String title, String place, String timeText, String hostUid, long createdAt) {
-        this.title = title;
-        this.place = place;
-        this.timeText = timeText;
-        this.hostUid = hostUid;
-        this.createdAt = createdAt;
-    }
-
-    // getter / setter
-
-    public String getId() {
-        return id;
-    }
-
+    public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getPlace() {
-        return place;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public String getTimeText() {
-        return timeText;
-    }
+    public String getHostUid() { return hostUid; }
+    public void setHostUid(String hostUid) { this.hostUid = hostUid; }
 
-    public String getHostUid() {
-        return hostUid;
-    }
+    public Long getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
 
-    public long getCreatedAt() {
-        return createdAt;
-    }
+    public String getRouteId() { return routeId; }
+    public void setRouteId(String routeId) { this.routeId = routeId; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public String getRouteTitle() { return routeTitle; }
+    public void setRouteTitle(String routeTitle) { this.routeTitle = routeTitle; }
 
-    public void setPlace(String place) {
-        this.place = place;
-    }
+    public String getRouteStart() { return routeStart; }
+    public void setRouteStart(String routeStart) { this.routeStart = routeStart; }
 
-    public void setTimeText(String timeText) {
-        this.timeText = timeText;
-    }
-
-    public void setHostUid(String hostUid) {
-        this.hostUid = hostUid;
-    }
-
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
-    }
+    public String getRouteEnd() { return routeEnd; }
+    public void setRouteEnd(String routeEnd) { this.routeEnd = routeEnd; }
 }
