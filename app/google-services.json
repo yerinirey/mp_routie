@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "824033878544",
+    "project_id": "routie-5c408",
+    "storage_bucket": "routie-5c408.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:824033878544:android:591e0a89766b0d64446095",
+        "android_client_info": {
+          "package_name": "com.example.mpteamproj"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCapySkVnmgkLWbKn46l3BSNhpN_yLUn8Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
