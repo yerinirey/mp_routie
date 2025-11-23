@@ -36,6 +36,7 @@ public class RouteDetailActivity extends AppCompatActivity {
     public static final String EXTRA_ROUTE_ID = "routeId";
 
     private TextView tvDetailRouteTitle;
+    private TextView tvDetailRouteDesc;
     private TextView tvDetailStart;
     private TextView tvDetailEnd;
     private MapView detailMapView;
@@ -59,6 +60,7 @@ public class RouteDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_route_detail);
 
         tvDetailRouteTitle = findViewById(R.id.tvDetailRouteTitle);
+        tvDetailRouteDesc  = findViewById(R.id.tvDetailRouteDesc);
         tvDetailStart = findViewById(R.id.tvDetailStart);
         tvDetailEnd = findViewById(R.id.tvDetailEnd);
         detailMapView = findViewById(R.id.detailMapView);
@@ -133,6 +135,7 @@ public class RouteDetailActivity extends AppCompatActivity {
         }
 
         String title = safeString(doc.getString("title"));
+        String description = safeString(doc.getString("description"));
         String startPlace = safeString(doc.getString("startPlace"));
         String endPlace = safeString(doc.getString("endPlace"));
 
@@ -142,7 +145,11 @@ public class RouteDetailActivity extends AppCompatActivity {
         Double eLng = doc.getDouble("endLng");
 
         tvDetailRouteTitle.setText(title.isEmpty() ? "루트 상세" : title);
-
+        if (description.isEmpty()) {
+            tvDetailRouteDesc.setText("루트 설명 없음");
+        } else {
+            tvDetailRouteDesc.setText(description);
+        }
         if (sLat != null && sLng != null) {
             tvDetailStart.setText(String.format(
                     Locale.getDefault(),

@@ -37,6 +37,7 @@ import java.util.Map;
 public class RouteCreateActivity extends AppCompatActivity {
 
     private EditText etRouteTitle;
+    private EditText etRouteDescription;
     private TextView tvPointCount;
     private TextView tvStartPoint;
     private TextView tvEndPoint;
@@ -63,6 +64,7 @@ public class RouteCreateActivity extends AppCompatActivity {
 
         // XML id와 1:1 매칭
         etRouteTitle = findViewById(R.id.etRouteTitle);
+        etRouteDescription = findViewById(R.id.etRouteDescription);
         tvPointCount = findViewById(R.id.tvPointCount);
         tvStartPoint = findViewById(R.id.tvStartPoint);
         tvEndPoint = findViewById(R.id.tvEndPoint);
@@ -217,6 +219,7 @@ public class RouteCreateActivity extends AppCompatActivity {
     // Firestore에 루트 저장
     private void saveRoute() {
         String title = etRouteTitle.getText().toString().trim();
+        String description = etRouteDescription.getText().toString().trim();
 
         if (TextUtils.isEmpty(title)) {
             Toast.makeText(this, "루트 이름을 입력해주세요.", Toast.LENGTH_SHORT).show();
@@ -250,6 +253,7 @@ public class RouteCreateActivity extends AppCompatActivity {
 
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);
+        data.put("description", description);
         data.put("startLat", start.latitude);
         data.put("startLng", start.longitude);
         data.put("endLat", end.latitude);

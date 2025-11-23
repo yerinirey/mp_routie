@@ -12,6 +12,14 @@
         android:hint="루트 이름을 입력하세요"
         android:padding="12dp"
         android:textSize="16sp" />
+    <EditText
+        android:id="@+id/etRouteDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="루트 한 줄 소개 (예: 한강 야경 스팟 산책 코스)"
+        android:inputType="text"
+        android:layout_marginTop="8dp"
+        android:padding="8dp" />
 
     <!-- 지도 -->
     <com.kakao.vectormap.MapView

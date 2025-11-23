@@ -18,18 +18,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- 출발 텍스트 -->
+    <!-- 루트 한 줄 소개 -->
+    <TextView
+        android:id="@+id/tvDetailRouteDesc"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="4dp"
+        android:text="루트 설명 없음"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tvDetailRouteTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 출발 지점 -->
     <TextView
         android:id="@+id/tvDetailStart"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:text="출발 지점:"
-        app:layout_constraintTop_toBottomOf="@id/tvDetailRouteTitle"
+        app:layout_constraintTop_toBottomOf="@id/tvDetailRouteDesc"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        ㅅapp:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- 도착 텍스트 -->
+    <!-- 도착 지점 -->
     <TextView
         android:id="@+id/tvDetailEnd"
         android:layout_width="0dp"
@@ -41,7 +54,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- 이 루트로 번개 만들기 버튼 -->
+    <!-- 이 루트로 번개 만들기 -->
     <Button
         android:id="@+id/btnCreateLightning"
         android:layout_width="wrap_content"
