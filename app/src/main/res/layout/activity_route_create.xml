@@ -1,90 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 루트 제목 -->
+    <!-- 루트 이름 -->
     <EditText
         android:id="@+id/etRouteTitle"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:hint="루트 제목을 입력하세요"
-        android:inputType="text"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:hint="루트 이름을 입력하세요"
+        android:padding="12dp"
+        android:textSize="16sp" />
 
-    <!-- 카카오 지도 -->
+    <!-- 지도 -->
     <com.kakao.vectormap.MapView
         android:id="@+id/mapView"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginStart="0dp"
-        android:layout_marginEnd="0dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/etRouteTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bottomPanel" />
+        android:layout_weight="1" />
 
-    <!-- 아래 패널 : 선택 모드 버튼 + 좌표 표시 + 저장 버튼 -->
+    <!-- 하단 정보 + 버튼들 -->
     <LinearLayout
-        android:id="@+id/bottomPanel"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:padding="12dp">
 
-        <!-- 시작/도착 선택 모드 버튼 -->
+        <TextView
+            android:id="@+id/tvGuide"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="지도를 탭해서 출발 → 경유지 → 도착 순으로 루트를 찍어주세요."
+            android:textSize="14sp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvPointCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="지점: 0개" />
+
+        <TextView
+            android:id="@+id/tvStartPoint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="출발: 미지정" />
+
+        <TextView
+            android:id="@+id/tvEndPoint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="도착: 미지정" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_horizontal">
+            android:gravity="end"
+            android:paddingTop="8dp">
 
             <Button
-                android:id="@+id/btnSelectStart"
-                android:layout_width="0dp"
+                android:id="@+id/btnUndoPoint"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="시작 지점 선택" />
+                android:text="마지막 지점 취소" />
 
             <Button
-                android:id="@+id/btnSelectEnd"
-                android:layout_width="0dp"
+                android:id="@+id/btnClearPoints"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:text="도착 지점 선택" />
+                android:text="전체 지점 초기화"
+                android:layout_marginStart="8dp" />
+
+            <Button
+                android:id="@+id/btnSaveRoute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="루트 저장"
+                android:layout_marginStart="8dp" />
         </LinearLayout>
-
-        <!-- 선택된 좌표 표시 -->
-        <TextView
-            android:id="@+id/tvStartPoint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="8dp"
-            android:text="시작 지점: 미선택" />
-
-        <TextView
-            android:id="@+id/tvEndPoint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="도착 지점: 미선택" />
-
-        <!-- 저장 버튼 -->
-        <Button
-            android:id="@+id/btnSaveRoute"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="루트 저장" />
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
