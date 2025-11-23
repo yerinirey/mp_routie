@@ -24,6 +24,8 @@
         <activity android:name=".HomeActivity" />
         <activity android:name=".LightningListActivity" />
         <activity android:name=".LightningCreateActivity" />
+        <activity android:name=".RouteCreateActivity" />
+        <activity android:name=".RouteListActivity" />
 <!--        <activity-->
 <!--            android:name=".MainActivity"-->
 <!--            android:exported="true"/>-->

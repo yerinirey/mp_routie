@@ -34,12 +34,16 @@ public class HomeActivity extends AppCompatActivity {
             return true;
         });
 
-        btnCreateRoute.setOnClickListener(v ->
-                Toast.makeText(this, "루트 생성 화면(추후 구현)", Toast.LENGTH_SHORT).show()
+        btnCreateRoute.setOnClickListener(v -> {
+                    Intent intent = new Intent(HomeActivity.this, RouteCreateActivity.class);
+                    startActivity(intent);
+                }
         );
 
-        btnBrowseRoute.setOnClickListener(v ->
-                Toast.makeText(this, "루트 리스트 화면(추후 구현)", Toast.LENGTH_SHORT).show()
+        btnBrowseRoute.setOnClickListener(v -> {
+                    Intent intent = new Intent(HomeActivity.this, RouteListActivity.class);
+                    startActivity(intent);
+                }
         );
 
         // 🔹 번개 둘러보기 버튼 → LightningListActivity로 이동
