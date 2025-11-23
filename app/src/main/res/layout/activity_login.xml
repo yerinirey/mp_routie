@@ -17,28 +17,31 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="40dp" />
 
+    <!-- 🔹 이메일 입력 -->
     <EditText
-        android:id="@+id/etLoginId"
+        android:id="@+id/etLoginEmail"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="아이디"
-        android:inputType="text"
+        android:hint="이메일"
+        android:inputType="textEmailAddress"
         app:layout_constraintTop_toBottomOf="@id/tvLoginTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="32dp" />
 
+    <!-- 🔹 비밀번호 입력 -->
     <EditText
         android:id="@+id/etLoginPassword"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="비밀번호"
         android:inputType="textPassword"
-        app:layout_constraintTop_toBottomOf="@id/etLoginId"
+        app:layout_constraintTop_toBottomOf="@id/etLoginEmail"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp" />
 
+    <!-- 로그인 버튼 -->
     <Button
         android:id="@+id/btnLogin"
         android:layout_width="0dp"
@@ -49,6 +52,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp" />
 
+    <!-- 회원가입으로 이동 -->
     <TextView
         android:id="@+id/tvGoRegister"
         android:layout_width="wrap_content"
