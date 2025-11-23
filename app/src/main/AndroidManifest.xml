@@ -23,6 +23,7 @@
         <activity android:name=".RegisterActivity" />
         <activity android:name=".HomeActivity" />
         <activity android:name=".LightningListActivity" />
+        <activity android:name=".LightningCreateActivity" />
 <!--        <activity-->
 <!--            android:name=".MainActivity"-->
 <!--            android:exported="true"/>-->

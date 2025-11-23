@@ -6,55 +6,54 @@
     android:padding="24dp">
 
     <TextView
-        android:id="@+id/tvHomeTitle"
+        android:id="@+id/tvCreateLightningTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="홈"
-        android:textSize="26sp"
+        android:text="번개 만들기"
+        android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="32dp" />
+        android:layout_marginTop="24dp" />
 
     <EditText
-        android:id="@+id/etSearchRoute"
+        android:id="@+id/etLightningTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="루트 검색하기"
-        android:inputType="text"
-        app:layout_constraintTop_toBottomOf="@id/tvHomeTitle"
+        android:hint="제목"
+        app:layout_constraintTop_toBottomOf="@id/tvCreateLightningTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp" />
 
-    <Button
-        android:id="@+id/btnCreateRoute"
+    <EditText
+        android:id="@+id/etLightningPlace"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="루트 생성"
-        app:layout_constraintTop_toBottomOf="@id/etSearchRoute"
+        android:hint="장소"
+        app:layout_constraintTop_toBottomOf="@id/etLightningTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp" />
+        android:layout_marginTop="16dp" />
 
-    <Button
-        android:id="@+id/btnBrowseRoute"
+    <EditText
+        android:id="@+id/etLightningTime"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="루트 둘러보기"
-        app:layout_constraintTop_toBottomOf="@id/btnCreateRoute"
+        android:hint="시간 (예: 오늘 19:00)"
+        app:layout_constraintTop_toBottomOf="@id/etLightningPlace"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp" />
 
     <Button
-        android:id="@+id/btnLightning"
+        android:id="@+id/btnLightningSubmit"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="번개 둘러보기"
-        app:layout_constraintTop_toBottomOf="@id/btnBrowseRoute"
+        android:text="번개 등록"
+        app:layout_constraintTop_toBottomOf="@id/etLightningTime"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="24dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

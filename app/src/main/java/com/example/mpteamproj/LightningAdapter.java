@@ -8,15 +8,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.mpteamproj.R;
-
 import java.util.List;
 
 public class LightningAdapter extends RecyclerView.Adapter<LightningAdapter.LightningViewHolder> {
 
-    private final List<com.example.mpteamproj.LightningPost> items;
+    private final List<LightningPost> items;
 
-    public LightningAdapter(List<com.example.mpteamproj.LightningPost> items) {
+    public LightningAdapter(List<LightningPost> items) {
         this.items = items;
     }
 
@@ -30,9 +28,10 @@ public class LightningAdapter extends RecyclerView.Adapter<LightningAdapter.Ligh
 
     @Override
     public void onBindViewHolder(@NonNull LightningViewHolder holder, int position) {
-        com.example.mpteamproj.LightningPost post = items.get(position);
+        LightningPost post = items.get(position);
         holder.tvTitle.setText(post.getTitle());
-        holder.tvInfo.setText(post.getPlaceAndTime());
+        String info = post.getPlace() + " · " + post.getTimeText();
+        holder.tvInfo.setText(info);
     }
 
     @Override

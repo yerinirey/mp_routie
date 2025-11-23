@@ -9,13 +9,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.mpteamproj.R;
-
 public class HomeActivity extends AppCompatActivity {
 
     private EditText etSearchRoute;
     private Button btnCreateRoute;
     private Button btnBrowseRoute;
+    private Button btnLightning;   // 🔹 추가
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,35 +24,28 @@ public class HomeActivity extends AppCompatActivity {
         etSearchRoute = findViewById(R.id.etSearchRoute);
         btnCreateRoute = findViewById(R.id.btnCreateRoute);
         btnBrowseRoute = findViewById(R.id.btnBrowseRoute);
+        btnLightning = findViewById(R.id.btnLightning);
 
-        // 검색창은 일단 Toast만
         etSearchRoute.setOnEditorActionListener((textView, actionId, event) -> {
             String keyword = etSearchRoute.getText().toString().trim();
             if (!keyword.isEmpty()) {
                 Toast.makeText(this, "검색: " + keyword, Toast.LENGTH_SHORT).show();
-                // TODO: 검색 결과 화면 or 리스트로 넘기기
             }
             return true;
         });
 
-        // 루트 생성 버튼 (나중에 맵 화면으로 연결할 예정)
-        btnCreateRoute.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                Intent intent = new Intent(HomeActivity.this, RouteCreateMapActivity.class);
-//                startActivity(intent);
-                Toast.makeText(HomeActivity.this, "루트 생성 화면으로 이동 예정", Toast.LENGTH_SHORT).show();
-            }
-        });
+        btnCreateRoute.setOnClickListener(v ->
+                Toast.makeText(this, "루트 생성 화면(추후 구현)", Toast.LENGTH_SHORT).show()
+        );
 
-        // 루트 둘러보기 버튼
-        btnBrowseRoute.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                Intent intent = new Intent(HomeActivity.this, RouteListActivity.class);
-//                startActivity(intent);
-                Toast.makeText(HomeActivity.this, "루트 리스트 화면으로 이동 예정", Toast.LENGTH_SHORT).show();
-            }
+        btnBrowseRoute.setOnClickListener(v ->
+                Toast.makeText(this, "루트 리스트 화면(추후 구현)", Toast.LENGTH_SHORT).show()
+        );
+
+        // 🔹 번개 둘러보기 버튼 → LightningListActivity로 이동
+        btnLightning.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, LightningListActivity.class);
+            startActivity(intent);
         });
     }
 }

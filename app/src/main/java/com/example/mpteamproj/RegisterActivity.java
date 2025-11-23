@@ -51,7 +51,6 @@ public class RegisterActivity extends AppCompatActivity {
             mAuth.createUserWithEmailAndPassword(email, pw)
                     .addOnCompleteListener(this, task -> {
                         if (task.isSuccessful()) {
-                            // ✅ 여기까지 오면 Auth 계정 생성은 무조건 성공한 상태
                             showRegisterSuccessDialog();
 
                         } else {
