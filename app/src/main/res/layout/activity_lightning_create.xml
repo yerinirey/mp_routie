@@ -35,6 +35,16 @@
             android:padding="8dp"
             android:layout_marginTop="12dp" />
 
+        <!-- 위치 소개 입력칸 -->
+        <EditText
+            android:id="@+id/etLightningLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="모임 위치 소개 (예: 홍대입구역 9번 출구 앞)"
+            android:inputType="text"
+            android:padding="8dp"
+            android:layout_marginTop="12dp" />
+
         <Button
             android:id="@+id/btnLightningSave"
             android:layout_width="match_parent"

@@ -21,13 +21,13 @@ public class LightningCreateActivity extends AppCompatActivity {
 
     private EditText etLightningTitle;
     private EditText etLightningDescription;
+    private EditText etLightningLocation;  // 🔹 위치 소개
     private TextView tvLinkedRoute;
     private Button btnLightningSave;
 
     private FirebaseAuth auth;
     private FirebaseFirestore db;
 
-    // route 정보 (있을 수도, 없을 수도 있음)
     private String routeId;
     private String routeTitle;
     private String routeStart;
@@ -40,13 +40,13 @@ public class LightningCreateActivity extends AppCompatActivity {
 
         etLightningTitle = findViewById(R.id.etLightningTitle);
         etLightningDescription = findViewById(R.id.etLightningDescription);
+        etLightningLocation = findViewById(R.id.etLightningLocation);
         tvLinkedRoute = findViewById(R.id.tvLinkedRoute);
         btnLightningSave = findViewById(R.id.btnLightningSave);
 
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        // RouteDetailActivity 에서 넘어온 값들 (없을 수도 있음)
         routeId = getIntent().getStringExtra("routeId");
         routeTitle = getIntent().getStringExtra("routeTitle");
         routeStart = getIntent().getStringExtra("routeStart");
@@ -67,6 +67,7 @@ public class LightningCreateActivity extends AppCompatActivity {
     private void saveLightning() {
         String title = etLightningTitle.getText().toString().trim();
         String desc = etLightningDescription.getText().toString().trim();
+        String location = etLightningLocation.getText().toString().trim(); // 🔹 위치 소개
 
         if (TextUtils.isEmpty(title)) {
             Toast.makeText(this, "번개 제목을 입력해주세요.", Toast.LENGTH_SHORT).show();
@@ -80,11 +81,8 @@ public class LightningCreateActivity extends AppCompatActivity {
         }
 
         String hostUid = user.getUid();
-
-        // 🔹 회원가입 때 RegisterActivity에서 넣어준 displayName = 닉네임
         String hostNickname = user.getDisplayName();
         if (hostNickname == null || hostNickname.isEmpty()) {
-            // 혹시 displayName이 비어있는 옛 계정이면 fallback
             if (user.getEmail() != null && !user.getEmail().isEmpty()) {
                 hostNickname = user.getEmail();
             } else {
@@ -95,9 +93,14 @@ public class LightningCreateActivity extends AppCompatActivity {
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);
         data.put("description", desc);
-        data.put("hostUid", hostUid);           // UID
-        data.put("hostNickname", hostNickname); // 🔹 닉네임
+        data.put("hostUid", hostUid);
+        data.put("hostNickname", hostNickname);
         data.put("createdAt", System.currentTimeMillis());
+
+        // 🔹 위치 소개는 선택 입력이라 비어 있으면 안 넣어도 됨
+        if (!TextUtils.isEmpty(location)) {
+            data.put("locationDesc", location);
+        }
 
         if (!TextUtils.isEmpty(routeId)) {
             data.put("routeId", routeId);
