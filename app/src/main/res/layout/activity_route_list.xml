@@ -15,22 +15,50 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <LinearLayout
+        android:id="@+id/layoutRouteSortButtons"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/tvRouteListTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btnGoCreateRoute">
+
+        <Button
+            android:id="@+id/btnRouteSortRecent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="최신순" />
+
+        <Button
+            android:id="@+id/btnRouteSortLikes"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="좋아요순" />
+    </LinearLayout>
+
     <Button
         android:id="@+id/btnGoCreateRoute"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="루트 만들기"
         android:layout_marginEnd="16dp"
-        app:layout_constraintTop_toTopOf="@id/tvRouteListTitle"
-        app:layout_constraintBottom_toBottomOf="@id/tvRouteListTitle"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/tvRouteListTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/layoutRouteSortButtons" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvRoutes"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:padding="8dp"
-        app:layout_constraintTop_toBottomOf="@id/tvRouteListTitle"
+        app:layout_constraintTop_toBottomOf="@id/layoutRouteSortButtons"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

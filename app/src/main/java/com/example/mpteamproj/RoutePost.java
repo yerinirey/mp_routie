@@ -11,6 +11,7 @@ public class RoutePost {
     private String memo;
     private String hostUid;
     private Long createdAt;
+    private int likeCount;
 
     public RoutePost() {
         // Firestore용 기본 생성자
@@ -76,4 +77,11 @@ public class RoutePost {
     }
 
     public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
+    public int getLikeCount() {
+        return likeCount;
+    }
+
+    public void setLikeCount(int likeCount) {
+        this.likeCount = likeCount;
+    }
 }

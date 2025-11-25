@@ -2,57 +2,74 @@ package com.example.mpteamproj;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class RouteListActivity extends AppCompatActivity {
 
     private RecyclerView rvRoutes;
-    private Button btnGoCreateRoute;
+    private RouteAdapter adapter;
+
+    private Button btnRouteSortRecent;
+    private Button btnRouteSortLikes;
 
     private FirebaseFirestore db;
-    private RouteAdapter adapter;
-    private List<RoutePost> items = new ArrayList<>();
+
+    private final List<RoutePost> routeItems = new ArrayList<>();
+
+    private static final int SORT_RECENT = 0;
+    private static final int SORT_LIKES  = 1;
+    private int currentSort = SORT_RECENT;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_route_list);
 
         rvRoutes = findViewById(R.id.rvRoutes);
-        btnGoCreateRoute = findViewById(R.id.btnGoCreateRoute);
+        btnRouteSortRecent = findViewById(R.id.btnRouteSortRecent);
+        btnRouteSortLikes  = findViewById(R.id.btnRouteSortLikes);
 
         db = FirebaseFirestore.getInstance();
 
+        adapter = new RouteAdapter(routeItems);
         rvRoutes.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new RouteAdapter(items);
         rvRoutes.setAdapter(adapter);
 
-        adapter.setOnItemClickListener(item -> {
-            if (item.getId() == null || item.getId().isEmpty()) return;
+        // 아이템 클릭 → RouteDetailActivity로 이동 (기존 코드 사용)
+        adapter.setOnItemClickListener(post -> {
             Intent intent = new Intent(RouteListActivity.this, RouteDetailActivity.class);
-            intent.putExtra(RouteDetailActivity.EXTRA_ROUTE_ID, item.getId());
+            intent.putExtra(RouteDetailActivity.EXTRA_ROUTE_ID, post.getId());
             startActivity(intent);
         });
 
-        btnGoCreateRoute.setOnClickListener(v -> {
-            Intent intent = new Intent(RouteListActivity.this, RouteCreateActivity.class);
-            startActivity(intent);
+        btnRouteSortRecent.setOnClickListener(v -> {
+            currentSort = SORT_RECENT;
+            applySort();
+            updateSortButtonUI();
         });
 
+        btnRouteSortLikes.setOnClickListener(v -> {
+            currentSort = SORT_LIKES;
+            applySort();
+            updateSortButtonUI();
+        });
+
+        updateSortButtonUI();
         subscribeRoutes();
     }
 
@@ -61,59 +78,56 @@ public class RouteListActivity extends AppCompatActivity {
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null) {
-                        Log.e("RouteListActivity", "Listen failed", e);
                         Toast.makeText(this,
                                 "루트 목록 불러오기 실패: " + e.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    items.clear();
-
+                    routeItems.clear();
                     if (snapshots != null) {
                         for (DocumentSnapshot doc : snapshots) {
-                            try {
-                                RoutePost post = new RoutePost();
+                            RoutePost post = doc.toObject(RoutePost.class);
+                            if (post != null) {
                                 post.setId(doc.getId());
 
-                                // 문자열 필드들
-                                post.setTitle(safeString(doc.getString("title")));
-                                post.setStartPlace(safeString(doc.getString("startPlace")));
-                                post.setEndPlace(safeString(doc.getString("endPlace")));
-                                post.setMemo(safeString(doc.getString("memo")));
-                                post.setHostUid(safeString(doc.getString("hostUid")));
-
-                                // createdAt은 Long 또는 Timestamp 둘 다 받을 수 있게 처리
-                                Object createdRaw = doc.get("createdAt");
-                                Long createdAt = 0L;
-
-                                if (createdRaw instanceof Long) {
-                                    createdAt = (Long) createdRaw;
-                                } else if (createdRaw instanceof Timestamp) {
-                                    createdAt = ((Timestamp) createdRaw).toDate().getTime();
-                                } else if (createdRaw == null) {
-                                    // 필드가 아예 없는 경우도 방어
-                                    createdAt = 0L;
+                                Long likeCountLong = doc.getLong("likeCount");
+                                if (likeCountLong != null) {
+                                    post.setLikeCount(likeCountLong.intValue());
                                 }
 
-                                post.setCreatedAt(createdAt);
-
-                                items.add(post);
-
-                            } catch (Exception ex) {
-                                Log.e("RouteListActivity",
-                                        "문서 파싱 오류 id=" + doc.getId(), ex);
-                                // 여기서 그냥 continue 해서 나머지 문서들은 계속 읽게 함
+                                routeItems.add(post);
                             }
                         }
                     }
-
-                    adapter.notifyDataSetChanged();
+                    applySort();
                 });
     }
 
-    // null이면 빈 문자열로 처리하는 헬퍼
-    private String safeString(String value) {
-        return value != null ? value : "";
+    private void applySort() {
+        if (currentSort == SORT_LIKES) {
+            Collections.sort(routeItems,
+                    (a, b) -> Integer.compare(b.getLikeCount(), a.getLikeCount()));
+        } else {
+            // createdAt 기준 최신순
+            Collections.sort(routeItems, new Comparator<RoutePost>() {
+                @Override
+                public int compare(RoutePost a, RoutePost b) {
+                    Long ca = a.getCreatedAt();
+                    Long cb = b.getCreatedAt();
+                    long va = (ca != null) ? ca : 0L;
+                    long vb = (cb != null) ? cb : 0L;
+                    return Long.compare(vb, va);
+                }
+            });
+        }
+        adapter.notifyDataSetChanged();
+    }
+
+    private void updateSortButtonUI() {
+        float selected  = 1.0f;
+        float unselected = 0.5f;
+        btnRouteSortRecent.setAlpha(currentSort == SORT_RECENT ? selected : unselected);
+        btnRouteSortLikes.setAlpha(currentSort == SORT_LIKES  ? selected : unselected);
     }
 }

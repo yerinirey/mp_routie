@@ -2,6 +2,7 @@ package com.example.mpteamproj;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
@@ -10,6 +11,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.kakao.vectormap.KakaoMap;
@@ -27,6 +30,7 @@ import com.kakao.vectormap.shape.PolylineOptions;
 import com.kakao.vectormap.shape.ShapeLayer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -39,10 +43,16 @@ public class RouteDetailActivity extends AppCompatActivity {
     private TextView tvDetailRouteDesc;
     private TextView tvDetailStart;
     private TextView tvDetailEnd;
+    private TextView tvDetailLikes;
     private MapView detailMapView;
     private Button btnCreateLightning;
+    private Button btnToggleLike;
 
     private FirebaseFirestore db;
+    private FirebaseAuth auth;
+    private String currentUid;
+    private String currentNickname;
+
     private KakaoMap kakaoMap;
     private LabelLayer labelLayer;
     private ShapeLayer shapeLayer;
@@ -54,6 +64,10 @@ public class RouteDetailActivity extends AppCompatActivity {
     private boolean routeLoaded = false;
     private String routeId;
 
+
+    private int likeCount = 0;
+    private boolean liked = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,12 +75,28 @@ public class RouteDetailActivity extends AppCompatActivity {
 
         tvDetailRouteTitle = findViewById(R.id.tvDetailRouteTitle);
         tvDetailRouteDesc  = findViewById(R.id.tvDetailRouteDesc);
-        tvDetailStart = findViewById(R.id.tvDetailStart);
-        tvDetailEnd = findViewById(R.id.tvDetailEnd);
-        detailMapView = findViewById(R.id.detailMapView);
+        tvDetailStart      = findViewById(R.id.tvDetailStart);
+        tvDetailEnd        = findViewById(R.id.tvDetailEnd);
+        tvDetailLikes      = findViewById(R.id.tvDetailLikes);
+        detailMapView      = findViewById(R.id.detailMapView);
         btnCreateLightning = findViewById(R.id.btnCreateLightning);
+        btnToggleLike      = findViewById(R.id.btnToggleLike);
 
-        db = FirebaseFirestore.getInstance();
+        db   = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
+
+        FirebaseUser user = auth.getCurrentUser();
+        if (user != null) {
+            currentUid = user.getUid();
+            currentNickname = user.getDisplayName();
+            if (TextUtils.isEmpty(currentNickname)) {
+                if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+                    currentNickname = user.getEmail();
+                } else {
+                    currentNickname = currentUid;
+                }
+            }
+        }
 
         routeId = getIntent().getStringExtra(EXTRA_ROUTE_ID);
         if (routeId == null || routeId.isEmpty()) {
@@ -86,8 +116,13 @@ public class RouteDetailActivity extends AppCompatActivity {
             });
         }
 
+        if (btnToggleLike != null) {
+            btnToggleLike.setOnClickListener(v -> toggleLike());
+        }
+
         initMap();
         loadRoute(routeId);
+        startLikeListener();
     }
 
     private void initMap() {
@@ -134,15 +169,21 @@ public class RouteDetailActivity extends AppCompatActivity {
             return;
         }
 
-        String title = safeString(doc.getString("title"));
+        String title       = safeString(doc.getString("title"));
         String description = safeString(doc.getString("description"));
-        String startPlace = safeString(doc.getString("startPlace"));
-        String endPlace = safeString(doc.getString("endPlace"));
+        String startPlace  = safeString(doc.getString("startPlace"));
+        String endPlace    = safeString(doc.getString("endPlace"));
 
         Double sLat = doc.getDouble("startLat");
         Double sLng = doc.getDouble("startLng");
         Double eLat = doc.getDouble("endLat");
         Double eLng = doc.getDouble("endLng");
+
+        Long likeCountLong = doc.getLong("likeCount");
+        if (likeCountLong != null) {
+            likeCount = likeCountLong.intValue();
+        }
+        tvDetailLikes.setText("좋아요 " + likeCount + "명");
 
         tvDetailRouteTitle.setText(title.isEmpty() ? "루트 상세" : title);
         if (description.isEmpty()) {
@@ -150,6 +191,7 @@ public class RouteDetailActivity extends AppCompatActivity {
         } else {
             tvDetailRouteDesc.setText(description);
         }
+
         if (sLat != null && sLng != null) {
             tvDetailStart.setText(String.format(
                     Locale.getDefault(),
@@ -203,6 +245,99 @@ public class RouteDetailActivity extends AppCompatActivity {
 
         routeLoaded = true;
         updateMapIfReady();
+    }
+
+
+    private void startLikeListener() {
+        if (TextUtils.isEmpty(routeId)) return;
+
+        db.collection("routes")
+                .document(routeId)
+                .collection("likes")
+                .addSnapshotListener((snap, e) -> {
+                    if (e != null) {
+                        Log.e("RouteDetail", "likes listener error", e);
+                        return;
+                    }
+
+                    int count = 0;
+                    boolean meLiked = false;
+
+                    if (snap != null) {
+                        count = snap.size();
+                        if (currentUid != null) {
+                            for (DocumentSnapshot d : snap) {
+                                if (currentUid.equals(d.getId())) {
+                                    meLiked = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    likeCount = count;
+                    liked = meLiked;
+
+                    tvDetailLikes.setText("좋아요 " + likeCount + "명");
+
+                    if (currentUid == null) {
+                        btnToggleLike.setEnabled(false);
+                        btnToggleLike.setText("로그인 필요");
+                    } else {
+                        btnToggleLike.setEnabled(true);
+                        btnToggleLike.setText(liked ? "좋아요 취소" : "좋아요");
+                    }
+
+
+                    db.collection("routes")
+                            .document(routeId)
+                            .update("likeCount", likeCount);
+                });
+    }
+
+
+    private void toggleLike() {
+        if (currentUid == null) {
+            Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (TextUtils.isEmpty(routeId)) {
+            Toast.makeText(this, "루트 정보가 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (liked) {
+            // 좋아요 취소
+            db.collection("routes")
+                    .document(routeId)
+                    .collection("likes")
+                    .document(currentUid)
+                    .delete()
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this,
+                                    "좋아요 취소 실패: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show());
+        } else {
+            // 좋아요 누르기
+            String nick = currentNickname;
+            if (TextUtils.isEmpty(nick)) {
+                nick = currentUid;
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("nickname", nick);
+            data.put("likedAt", System.currentTimeMillis());
+
+            db.collection("routes")
+                    .document(routeId)
+                    .collection("likes")
+                    .document(currentUid)
+                    .set(data)
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this,
+                                    "좋아요 실패: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show());
+        }
     }
 
     private void updateMapIfReady() {

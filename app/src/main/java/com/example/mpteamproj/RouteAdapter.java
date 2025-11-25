@@ -46,7 +46,7 @@ public class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHol
         if (!TextUtils.isEmpty(post.getStartLabel())) {
             startText = post.getStartLabel();
         } else if (!TextUtils.isEmpty(post.getStartPlace())) {
-            startText = post.getStartPlace();  // 예전 데이터: "37.52..., 126.97..."
+            startText = post.getStartPlace();
         } else {
             startText = "출발 미지정";
         }
@@ -60,10 +60,10 @@ public class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHol
             endText = "도착 미지정";
         }
 
-        String info = startText + " → " + endText;
-        holder.tvInfo.setText(info);
-
+        holder.tvInfo.setText(startText + " → " + endText);
         holder.tvMemo.setText(post.getMemo());
+
+        holder.tvLikes.setText("🧡 " + post.getLikeCount());
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -81,12 +81,14 @@ public class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHol
         TextView tvTitle;
         TextView tvInfo;
         TextView tvMemo;
+        TextView tvLikes;
 
         public RouteViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvRouteTitle);
-            tvInfo = itemView.findViewById(R.id.tvRouteInfo);
-            tvMemo = itemView.findViewById(R.id.tvRouteMemo);
+            tvInfo  = itemView.findViewById(R.id.tvRouteInfo);
+            tvMemo  = itemView.findViewById(R.id.tvRouteMemo);
+            tvLikes = itemView.findViewById(R.id.tvRouteLikes);
         }
     }
 }
