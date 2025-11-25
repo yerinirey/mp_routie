@@ -66,6 +66,8 @@ public class LightningDetailActivity extends AppCompatActivity {
     private String currentUid;
     private String currentNickname;
     private boolean isJoined = false;
+    private int maxParticipants = 0;
+    private int lastParticipantCount = 0;
 
     // 지도 관련
     private KakaoMap kakaoMap;
@@ -172,7 +174,12 @@ public class LightningDetailActivity extends AppCompatActivity {
         if (eventRaw instanceof Number) {
             eventTime = ((Number) eventRaw).longValue();
         }
-
+        Long maxP = doc.getLong("maxParticipants");
+        if (maxP != null) {
+            maxParticipants = maxP.intValue();
+        } else {
+            maxParticipants = 0;
+        }
 
         routeId = safeString(doc.getString("routeId"));
         routeTitle = safeString(doc.getString("routeTitle"));
@@ -253,10 +260,17 @@ public class LightningDetailActivity extends AppCompatActivity {
                             }
                         }
                     }
-
+                    lastParticipantCount = count;  // 기억해두기
                     isJoined = joined;
+                    boolean isFull = (maxParticipants > 0 && count >= maxParticipants);
 
-                    tvParticipantSummary.setText("참가자: " + count + "명");
+                    String summary;
+                    if (maxParticipants > 0) {
+                        summary = "참가자: " + count + " / " + maxParticipants + "명";
+                    } else {
+                        summary = "참가자: " + count + "명";
+                    }
+                    tvParticipantSummary.setText(summary);
 
                     if (count > 0) {
                         String joinedNames = TextUtils.join(", ", names);
@@ -266,7 +280,18 @@ public class LightningDetailActivity extends AppCompatActivity {
                     }
 
                     if (currentUid != null) {
-                        btnToggleJoin.setText(isJoined ? "참가 취소" : "참가하기");
+                        if (isJoined) {
+                            btnToggleJoin.setEnabled(true);
+                            btnToggleJoin.setText("참가 취소");
+                        } else {
+                            if (isFull) {
+                                btnToggleJoin.setEnabled(false);
+                                btnToggleJoin.setText("정원 마감");
+                            } else {
+                                btnToggleJoin.setEnabled(true);
+                                btnToggleJoin.setText("참가하기");
+                            }
+                        }
                     }
                 });
     }
@@ -280,6 +305,12 @@ public class LightningDetailActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(lightningId)) {
             Toast.makeText(this, "번개 정보가 없습니다.", Toast.LENGTH_SHORT).show();
             return;
+        }
+        if (!isJoined) {
+            if (maxParticipants > 0 && lastParticipantCount >= maxParticipants) {
+                Toast.makeText(this, "정원이 이미 찼습니다.", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
         if (isJoined) {

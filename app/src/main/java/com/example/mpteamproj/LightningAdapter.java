@@ -44,13 +44,13 @@ public class LightningAdapter extends RecyclerView.Adapter<LightningAdapter.Ligh
 
         holder.tvTitle.setText(item.getTitle().isEmpty() ? "제목 없음" : item.getTitle());
 
-        // 호스트 + 시간
+        // 호스트
         String host = item.getHostUid().isEmpty()
                 ? "호스트 미정"
                 : item.getHostUid();
 
+        // 모임 시간 우선, 없으면 생성 시간
         String timeText;
-
         if (item.getEventTime() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm", Locale.getDefault());
             timeText = sdf.format(item.getEventTime());
@@ -61,12 +61,17 @@ public class LightningAdapter extends RecyclerView.Adapter<LightningAdapter.Ligh
             timeText = "미정";
         }
 
-        holder.tvMeta.setText("호스트: " + host + " / 생성: " + timeText);
+        holder.tvMeta.setText("호스트: " + host + " / 모임 시간: " + timeText);
 
-        // 참가자 수
-        holder.tvParticipants.setText("참가자: " + item.getParticipantCount() + "명");
+        // 🔹 참가자 수 + 정원
+        int count = item.getParticipantCount();
+        int maxP = item.getMaxParticipants();
+        if (maxP > 0) {
+            holder.tvParticipants.setText("참가자: " + count + " / " + maxP + "명");
+        } else {
+            holder.tvParticipants.setText("참가자: " + count + "명");
+        }
 
-        // 참여중 뱃지
         if (item.isJoined()) {
             holder.tvJoinedBadge.setVisibility(View.VISIBLE);
         } else {

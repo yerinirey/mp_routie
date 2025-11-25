@@ -32,6 +32,8 @@ public class LightningCreateActivity extends AppCompatActivity {
 
     private TextView tvLightningEventTime;
     private Button btnSelectEventTime;
+
+    private EditText etMaxParticipants;
     private Button btnLightningSave;
 
     private FirebaseAuth auth;
@@ -42,9 +44,8 @@ public class LightningCreateActivity extends AppCompatActivity {
     private String routeStart;
     private String routeEnd;
 
-    // 🔹 선택된 모임 시간 (epoch millis)
+    // 모임 시간
     private long eventTimeMillis = -1L;
-
     private final SimpleDateFormat eventTimeFormat =
             new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
@@ -61,6 +62,7 @@ public class LightningCreateActivity extends AppCompatActivity {
         tvLightningEventTime = findViewById(R.id.tvLightningEventTime);
         btnSelectEventTime = findViewById(R.id.btnSelectEventTime);
 
+        etMaxParticipants = findViewById(R.id.etMaxParticipants);   // 🔹
         btnLightningSave = findViewById(R.id.btnLightningSave);
 
         auth = FirebaseAuth.getInstance();
@@ -80,9 +82,7 @@ public class LightningCreateActivity extends AppCompatActivity {
             tvLinkedRoute.setText("연결된 루트 없음");
         }
 
-        // 🔹 모임 날짜/시간 선택 버튼
         btnSelectEventTime.setOnClickListener(v -> openDateTimePicker());
-
         btnLightningSave.setOnClickListener(v -> saveLightning());
     }
 
@@ -96,7 +96,6 @@ public class LightningCreateActivity extends AppCompatActivity {
                     cal.set(Calendar.MONTH, month);
                     cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-                    // 날짜 고른 뒤 시간 선택
                     TimePickerDialog tp = new TimePickerDialog(
                             this,
                             (timeView, hourOfDay, minute) -> {
@@ -128,6 +127,7 @@ public class LightningCreateActivity extends AppCompatActivity {
         String title = etLightningTitle.getText().toString().trim();
         String desc = etLightningDescription.getText().toString().trim();
         String location = etLightningLocation.getText().toString().trim();
+        String maxText = etMaxParticipants.getText().toString().trim();  // 🔹
 
         if (TextUtils.isEmpty(title)) {
             Toast.makeText(this, "번개 제목을 입력해주세요.", Toast.LENGTH_SHORT).show();
@@ -162,12 +162,23 @@ public class LightningCreateActivity extends AppCompatActivity {
         data.put("hostUid", hostUid);
         data.put("hostNickname", finalHostNickname);
         data.put("createdAt", System.currentTimeMillis());
-
-        // 모임 시간 저장
-        data.put("eventTime", eventTimeMillis);
+        data.put("eventTime", eventTimeMillis);    // 모임 시간
 
         if (!TextUtils.isEmpty(location)) {
             data.put("locationDesc", location);
+        }
+
+        // 최대 인원: 값이 있으면 저장, 없으면 (또는 0/음수면) 무제한
+        if (!TextUtils.isEmpty(maxText)) {
+            try {
+                int maxP = Integer.parseInt(maxText);
+                if (maxP > 0) {
+                    data.put("maxParticipants", maxP);
+                }
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "최대 인원은 숫자로 입력해주세요.", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
         if (!TextUtils.isEmpty(routeId)) {
@@ -180,7 +191,7 @@ public class LightningCreateActivity extends AppCompatActivity {
         db.collection("lightnings")
                 .add(data)
                 .addOnSuccessListener((DocumentReference ref) -> {
-                    // 방장을 자동 참가자로 등록
+                    // 방장 자동 참가
                     Map<String, Object> participant = new HashMap<>();
                     participant.put("nickname", finalHostNickname);
                     participant.put("joinedAt", System.currentTimeMillis());

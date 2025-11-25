@@ -29,13 +29,13 @@
             android:id="@+id/etLightningDescription"
             android:layout_width="match_parent"
             android:layout_height="120dp"
-            android:hint="번개 설명 (시간, 준비물 등)"
+            android:hint="번개 설명 (준비물 등)"
             android:gravity="top"
             android:inputType="textMultiLine"
             android:padding="8dp"
             android:layout_marginTop="12dp" />
 
-        <!-- 모임 시간 선택 영역 -->
+        <!-- 모임 시간 -->
         <TextView
             android:id="@+id/tvLightningEventTimeLabel"
             android:layout_width="match_parent"
@@ -59,7 +59,23 @@
             android:text="모임 날짜/시간 선택"
             android:layout_marginTop="4dp" />
 
+        <!-- 최대 인원 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="최대 인원(선택, 비우면 제한 없음)"
+            android:textSize="14sp"
+            android:layout_marginTop="12dp" />
 
+        <EditText
+            android:id="@+id/etMaxParticipants"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="예: 5"
+            android:inputType="number"
+            android:padding="8dp" />
+
+        <!-- 위치 소개 -->
         <EditText
             android:id="@+id/etLightningLocation"
             android:layout_width="match_parent"

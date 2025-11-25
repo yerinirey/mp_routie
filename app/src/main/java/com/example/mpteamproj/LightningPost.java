@@ -11,9 +11,11 @@ public class LightningPost {
     private String routeStart;
     private String routeEnd;
 
+    private int maxParticipants;     // 0이면 제한 없음
     private int participantCount;
     private Long eventTime;
     private boolean joined;   // 현재 로그인 유저가 참가중인지
+
 
     public LightningPost() {}
 
@@ -45,6 +47,7 @@ public class LightningPost {
     public void setRouteEnd(String routeEnd) { this.routeEnd = routeEnd; }
 
     // Participants
+    public int getMaxParticipants() {return maxParticipants;};
     public int getParticipantCount() {return participantCount;}
 
     public void setParticipantCount(int participantCount) { this.participantCount = participantCount;}
@@ -56,4 +59,5 @@ public class LightningPost {
     public Long getEventTime() { return eventTime;};
 
     public void setEventTime(Long eventTime) { this.eventTime = eventTime;};
+
 }
