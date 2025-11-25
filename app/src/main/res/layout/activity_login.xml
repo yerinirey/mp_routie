@@ -17,7 +17,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="40dp" />
 
-    <!-- 🔹 이메일 입력 -->
     <EditText
         android:id="@+id/etLoginEmail"
         android:layout_width="0dp"
@@ -29,7 +28,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="32dp" />
 
-    <!-- 🔹 비밀번호 입력 -->
     <EditText
         android:id="@+id/etLoginPassword"
         android:layout_width="0dp"

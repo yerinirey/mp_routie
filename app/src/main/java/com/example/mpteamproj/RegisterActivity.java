@@ -26,7 +26,7 @@ public class RegisterActivity extends AppCompatActivity {
     private Button btnRegister;
 
     private FirebaseAuth mAuth;
-    private FirebaseFirestore mDb;      // 🔹 Firestore 추가
+    private FirebaseFirestore mDb;      // Firestore 추가
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +39,7 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
 
         mAuth = FirebaseAuth.getInstance();
-        mDb = FirebaseFirestore.getInstance();  // 🔹 초기화
+        mDb = FirebaseFirestore.getInstance();  // 초기화
 
         btnRegister.setOnClickListener(v -> {
 
@@ -59,11 +59,10 @@ public class RegisterActivity extends AppCompatActivity {
             mAuth.createUserWithEmailAndPassword(email, pw)
                     .addOnCompleteListener(this, task -> {
                         if (task.isSuccessful()) {
-                            // 🔹 계정 생성은 성공
                             FirebaseUser firebaseUser = mAuth.getCurrentUser();
 
                             if (firebaseUser == null) {
-                                // 이 케이스는 거의 없지만, 방어적으로 처리
+
                                 showRegisterSuccessDialog();
                                 return;
                             }
@@ -114,7 +113,7 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    // 🔹 회원가입 완료 모달 + 로그인 Activity로 이동 (기존 로직 그대로)
+    // 회원가입 완료 모달 + 로그인 Activity로 이동
     private void showRegisterSuccessDialog() {
         new AlertDialog.Builder(RegisterActivity.this)
                 .setTitle("회원가입 완료")

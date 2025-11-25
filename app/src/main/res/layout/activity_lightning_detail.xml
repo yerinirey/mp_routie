@@ -42,7 +42,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- 🔹 모임 시간 -->
+
     <TextView
         android:id="@+id/tvLightningEventTime"
         android:layout_width="0dp"

@@ -62,7 +62,7 @@ public class LightningCreateActivity extends AppCompatActivity {
         tvLightningEventTime = findViewById(R.id.tvLightningEventTime);
         btnSelectEventTime = findViewById(R.id.btnSelectEventTime);
 
-        etMaxParticipants = findViewById(R.id.etMaxParticipants);   // 🔹
+        etMaxParticipants = findViewById(R.id.etMaxParticipants);
         btnLightningSave = findViewById(R.id.btnLightningSave);
 
         auth = FirebaseAuth.getInstance();
@@ -127,7 +127,7 @@ public class LightningCreateActivity extends AppCompatActivity {
         String title = etLightningTitle.getText().toString().trim();
         String desc = etLightningDescription.getText().toString().trim();
         String location = etLightningLocation.getText().toString().trim();
-        String maxText = etMaxParticipants.getText().toString().trim();  // 🔹
+        String maxText = etMaxParticipants.getText().toString().trim();
 
         if (TextUtils.isEmpty(title)) {
             Toast.makeText(this, "번개 제목을 입력해주세요.", Toast.LENGTH_SHORT).show();

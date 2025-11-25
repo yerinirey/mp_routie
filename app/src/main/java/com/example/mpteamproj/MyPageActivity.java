@@ -93,7 +93,7 @@ public class MyPageActivity extends AppCompatActivity {
         btnRefreshLocation.setOnClickListener(v -> refreshLocation());
     }
 
-    // 🔹 닉네임 저장
+    //  닉네임 저장
     private void saveNickname() {
         String newNick = etNewNickname.getText().toString().trim();
         if (TextUtils.isEmpty(newNick)) {
@@ -136,7 +136,7 @@ public class MyPageActivity extends AppCompatActivity {
                 );
     }
 
-    // 🔹 위치 새로고침
+    // 위치 새로고침
     private void refreshLocation() {
         // 권한 체크
         if (ContextCompat.checkSelfPermission(this,

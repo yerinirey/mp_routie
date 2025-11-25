@@ -20,6 +20,23 @@
         android:inputType="text"
         android:layout_marginTop="8dp"
         android:padding="8dp" />
+    <EditText
+        android:id="@+id/et_start_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="출발 지점 별칭 (예: 숭실대 중문)"
+        android:padding="8dp"
+        android:layout_marginTop="8dp"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/et_end_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="도착 지점 별칭 (예: 서울대입구역)"
+        android:padding="8dp"
+        android:layout_marginTop="4dp"
+        android:inputType="text" />
 
     <!-- 지도 -->
     <com.kakao.vectormap.MapView

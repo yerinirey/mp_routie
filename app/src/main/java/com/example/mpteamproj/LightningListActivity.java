@@ -63,7 +63,7 @@ public class LightningListActivity extends AppCompatActivity {
             currentUid = user.getUid();
         }
 
-        adapter = new LightningAdapter(displayItems); // 🔹 displayItems만 보여줌
+        adapter = new LightningAdapter(displayItems);
         rvLightnings.setLayoutManager(new LinearLayoutManager(this));
         rvLightnings.setAdapter(adapter);
 
@@ -87,7 +87,7 @@ public class LightningListActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // 🔹 필터 버튼 리스너
+        //  필터 버튼 리스너
         btnFilterAll.setOnClickListener(v -> {
             currentFilter = FILTER_ALL;
             applyFilter();

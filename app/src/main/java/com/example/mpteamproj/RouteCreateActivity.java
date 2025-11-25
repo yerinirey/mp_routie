@@ -38,6 +38,8 @@ public class RouteCreateActivity extends AppCompatActivity {
 
     private EditText etRouteTitle;
     private EditText etRouteDescription;
+    private EditText etStartLabel;
+    private EditText etEndLabel;
     private TextView tvPointCount;
     private TextView tvStartPoint;
     private TextView tvEndPoint;
@@ -62,9 +64,10 @@ public class RouteCreateActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_route_create);
 
-        // XML id와 1:1 매칭
         etRouteTitle = findViewById(R.id.etRouteTitle);
         etRouteDescription = findViewById(R.id.etRouteDescription);
+        etStartLabel = findViewById(R.id.et_start_label);
+        etEndLabel   = findViewById(R.id.et_end_label);
         tvPointCount = findViewById(R.id.tvPointCount);
         tvStartPoint = findViewById(R.id.tvStartPoint);
         tvEndPoint = findViewById(R.id.tvEndPoint);
@@ -220,6 +223,8 @@ public class RouteCreateActivity extends AppCompatActivity {
     private void saveRoute() {
         String title = etRouteTitle.getText().toString().trim();
         String description = etRouteDescription.getText().toString().trim();
+        String startLabel = etStartLabel.getText().toString().trim();
+        String endLabel   = etEndLabel.getText().toString().trim();
 
         if (TextUtils.isEmpty(title)) {
             Toast.makeText(this, "루트 이름을 입력해주세요.", Toast.LENGTH_SHORT).show();
@@ -250,6 +255,27 @@ public class RouteCreateActivity extends AppCompatActivity {
             m.put("lng", p.longitude);
             pointList.add(m);
         }
+        String startPlaceText;
+        if (!TextUtils.isEmpty(startLabel)) {
+            startPlaceText = startLabel;
+        } else {
+            startPlaceText = String.format(
+                    Locale.getDefault(),
+                    "%.5f, %.5f",
+                    start.latitude, start.longitude
+            );
+        }
+
+        String endPlaceText;
+        if (!TextUtils.isEmpty(endLabel)) {
+            endPlaceText = endLabel;
+        } else {
+            endPlaceText = String.format(
+                    Locale.getDefault(),
+                    "%.5f, %.5f",
+                    end.latitude, end.longitude
+            );
+        }
 
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);
@@ -258,14 +284,18 @@ public class RouteCreateActivity extends AppCompatActivity {
         data.put("startLng", start.longitude);
         data.put("endLat", end.latitude);
         data.put("endLng", end.longitude);
-        data.put("startPlace", String.format(Locale.getDefault(),
-                "%.5f, %.5f", start.latitude, start.longitude));
-        data.put("endPlace", String.format(Locale.getDefault(),
-                "%.5f, %.5f", end.latitude, end.longitude));
+        data.put("startPlace", startPlaceText);
+        data.put("endPlace", endPlaceText);
         data.put("memo", "");
         data.put("hostUid", user.getUid());
         data.put("createdAt", System.currentTimeMillis());
         data.put("points", pointList);
+        if (!TextUtils.isEmpty(startLabel)) {
+            data.put("startLabel", startLabel);
+        }
+        if (!TextUtils.isEmpty(endLabel)) {
+            data.put("endLabel", endLabel);
+        }
 
         db.collection("routes")
                 .add(data)

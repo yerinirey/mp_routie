@@ -6,9 +6,11 @@ public class RoutePost {
     private String title;
     private String startPlace;
     private String endPlace;
+    private String startLabel;
+    private String endLabel;
     private String memo;
     private String hostUid;
-    private Long createdAt;   // 🔹 primitive long 말고 Long (null 허용)
+    private Long createdAt;
 
     public RoutePost() {
         // Firestore용 기본 생성자
@@ -54,6 +56,12 @@ public class RoutePost {
     public String getMemo() {
         return memo;
     }
+
+    public String getStartLabel() { return startLabel != null ? startLabel : ""; }
+    public void setStartLabel(String startLabel) { this.startLabel = startLabel; }
+
+    public String getEndLabel() { return endLabel != null ? endLabel : ""; }
+    public void setEndLabel(String endLabel) { this.endLabel = endLabel; }
 
     public void setMemo(String memo) { this.memo = memo; }
 

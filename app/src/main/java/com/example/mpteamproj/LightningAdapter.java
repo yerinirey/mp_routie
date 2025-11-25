@@ -63,7 +63,7 @@ public class LightningAdapter extends RecyclerView.Adapter<LightningAdapter.Ligh
 
         holder.tvMeta.setText("호스트: " + host + " / 모임 시간: " + timeText);
 
-        // 🔹 참가자 수 + 정원
+
         int count = item.getParticipantCount();
         int maxP = item.getMaxParticipants();
         if (maxP > 0) {
