@@ -23,14 +23,26 @@ public class LightningListActivity extends AppCompatActivity {
 
     private RecyclerView rvLightnings;
     private LightningAdapter adapter;
-    private final List<LightningPost> items = new ArrayList<>();
+
+    // 전체 목록 + 현재 화면에 보여줄 목록
+    private final List<LightningPost> allItems = new ArrayList<>();
+    private final List<LightningPost> displayItems = new ArrayList<>();
+
     private FirebaseFirestore db;
-
-    private Button btnCreateLightningFromList;
-
-    // 현재 로그인 유저
     private FirebaseAuth auth;
     private String currentUid;
+
+    private Button btnCreateLightningFromList;
+    private Button btnFilterAll;
+    private Button btnFilterMine;
+    private Button btnFilterJoined;
+
+    // 필터 상태
+    private static final int FILTER_ALL = 0;
+    private static final int FILTER_MINE = 1;
+    private static final int FILTER_JOINED = 2;
+
+    private int currentFilter = FILTER_ALL;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,6 +51,9 @@ public class LightningListActivity extends AppCompatActivity {
 
         rvLightnings = findViewById(R.id.rvLightnings);
         btnCreateLightningFromList = findViewById(R.id.btnCreateLightningFromList);
+        btnFilterAll = findViewById(R.id.btnFilterAll);
+        btnFilterMine = findViewById(R.id.btnFilterMine);
+        btnFilterJoined = findViewById(R.id.btnFilterJoined);
 
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
@@ -48,11 +63,11 @@ public class LightningListActivity extends AppCompatActivity {
             currentUid = user.getUid();
         }
 
-        adapter = new LightningAdapter(items);
+        adapter = new LightningAdapter(displayItems); // 🔹 displayItems만 보여줌
         rvLightnings.setLayoutManager(new LinearLayoutManager(this));
         rvLightnings.setAdapter(adapter);
 
-        // 아이템 클릭 → 상세로 이동
+        // 아이템 클릭 → 상세 화면으로 이동
         adapter.setOnItemClickListener(item -> {
             if (item.getId() == null || item.getId().isEmpty()) return;
             Intent intent = new Intent(
@@ -63,7 +78,7 @@ public class LightningListActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // "번개 생성" 버튼 → 루트 없이 번개 생성
+        // 번개 생성 버튼 (루트 없이)
         btnCreateLightningFromList.setOnClickListener(v -> {
             Intent intent = new Intent(
                     LightningListActivity.this,
@@ -72,12 +87,33 @@ public class LightningListActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // 🔹 필터 버튼 리스너
+        btnFilterAll.setOnClickListener(v -> {
+            currentFilter = FILTER_ALL;
+            applyFilter();
+            updateFilterButtonUI();
+        });
+
+        btnFilterMine.setOnClickListener(v -> {
+            currentFilter = FILTER_MINE;
+            applyFilter();
+            updateFilterButtonUI();
+        });
+
+        btnFilterJoined.setOnClickListener(v -> {
+            currentFilter = FILTER_JOINED;
+            applyFilter();
+            updateFilterButtonUI();
+        });
+
+        updateFilterButtonUI();
         subscribeLightnings();
     }
 
+    // Firestore 실시간 구독
     private void subscribeLightnings() {
         db.collection("lightnings")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy("eventTime", Query.Direction.ASCENDING) // 모임 시간 기준 정렬
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null) {
                         Toast.makeText(this,
@@ -86,30 +122,30 @@ public class LightningListActivity extends AppCompatActivity {
                         return;
                     }
 
-                    items.clear();
+                    allItems.clear();
 
                     if (snapshots != null) {
                         for (DocumentSnapshot doc : snapshots) {
                             LightningPost post = doc.toObject(LightningPost.class);
                             if (post != null) {
                                 post.setId(doc.getId());
-                                items.add(post);
+                                allItems.add(post);
                             }
                         }
                     }
 
-                    adapter.notifyDataSetChanged();
+                    // 일단 전체 목록 기준 필터 적용
+                    applyFilter();
 
-                    // 🔹 각 번개에 대해 참가자 요약 정보 로딩
-                    for (int i = 0; i < items.size(); i++) {
-                        LightningPost post = items.get(i);
-                        loadParticipantSummary(post, i);
+                    //  각 번개에 대해 참가자 요약 정보 로딩
+                    for (LightningPost post : allItems) {
+                        loadParticipantSummary(post);
                     }
                 });
     }
 
-    // participants 컬렉션에서 참가자 수 + 참여 여부 확인
-    private void loadParticipantSummary(LightningPost post, int position) {
+    // participants 서브컬렉션에서 참가자 수 + 참여여부 로딩
+    private void loadParticipantSummary(LightningPost post) {
         if (post.getId() == null || post.getId().isEmpty()) return;
 
         db.collection("lightnings")
@@ -135,15 +171,53 @@ public class LightningListActivity extends AppCompatActivity {
                     post.setParticipantCount(count);
                     post.setJoined(joined);
 
-                    // 해당 아이템만 갱신
-                    if (position >= 0 && position < items.size()) {
-                        adapter.notifyItemChanged(position);
-                    }
+                    // 🔹 "참가한" 필터일 수도 있으니, 매번 필터 재적용
+                    applyFilter();
                 })
                 .addOnFailureListener(err -> {
-                    // 실패해도 리스트 전체는 사용 가능하니까 토스트 정도만
-                    // (원하면 조용히 무시해도 됨)
-                    // Toast.makeText(this, "참가자 정보 로딩 실패", Toast.LENGTH_SHORT).show();
+                    // 실패해도 조용히 무시해도 OK
                 });
+    }
+
+    // 🔹 현재 필터에 맞게 displayItems 구성
+    private void applyFilter() {
+        displayItems.clear();
+
+        if (currentFilter == FILTER_ALL) {
+            displayItems.addAll(allItems);
+
+        } else if (currentFilter == FILTER_MINE) {
+            if (currentUid == null) {
+            } else {
+                for (LightningPost p : allItems) {
+                    if (currentUid.equals(p.getHostUid())) {
+                        displayItems.add(p);
+                    }
+                }
+            }
+
+        } else if (currentFilter == FILTER_JOINED) {
+            if (currentUid == null) {
+                // 로그인 안 했으면 참가한 번개도 없음
+            } else {
+                for (LightningPost p : allItems) {
+                    if (p.isJoined()) {
+                        displayItems.add(p);
+                    }
+                }
+            }
+        }
+
+        adapter.notifyDataSetChanged();
+    }
+
+    // 선택된 필터 버튼 시각적 구분
+    private void updateFilterButtonUI() {
+        float selectedAlpha = 1.0f;
+        float unselectedAlpha = 0.5f;
+
+        btnFilterAll.setAlpha(currentFilter == FILTER_ALL ? selectedAlpha : unselectedAlpha);
+        btnFilterMine.setAlpha(currentFilter == FILTER_MINE ? selectedAlpha : unselectedAlpha);
+        btnFilterJoined.setAlpha(currentFilter == FILTER_JOINED ? selectedAlpha : unselectedAlpha);
     }
 }

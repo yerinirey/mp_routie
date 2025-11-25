@@ -12,6 +12,7 @@ public class LightningPost {
     private String routeEnd;
 
     private int participantCount;
+    private Long eventTime;
     private boolean joined;   // 현재 로그인 유저가 참가중인지
 
     public LightningPost() {}
@@ -51,4 +52,8 @@ public class LightningPost {
     public boolean isJoined() {return joined;}
 
     public void setJoined(boolean joined) {this.joined = joined;}
+
+    public Long getEventTime() { return eventTime;};
+
+    public void setEventTime(Long eventTime) { this.eventTime = eventTime;};
 }

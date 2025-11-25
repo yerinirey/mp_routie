@@ -49,11 +49,18 @@ public class LightningAdapter extends RecyclerView.Adapter<LightningAdapter.Ligh
                 ? "호스트 미정"
                 : item.getHostUid();
 
-        String timeText = "시간 정보 없음";
-        if (item.getCreatedAt() != null) {
+        String timeText;
+
+        if (item.getEventTime() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm", Locale.getDefault());
+            timeText = sdf.format(item.getEventTime());
+        } else if (item.getCreatedAt() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm", Locale.getDefault());
             timeText = sdf.format(item.getCreatedAt());
+        } else {
+            timeText = "미정";
         }
+
         holder.tvMeta.setText("호스트: " + host + " / 생성: " + timeText);
 
         // 참가자 수

@@ -1,5 +1,7 @@
 package com.example.mpteamproj;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
@@ -15,7 +17,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class LightningCreateActivity extends AppCompatActivity {
@@ -24,6 +29,9 @@ public class LightningCreateActivity extends AppCompatActivity {
     private EditText etLightningDescription;
     private EditText etLightningLocation;
     private TextView tvLinkedRoute;
+
+    private TextView tvLightningEventTime;
+    private Button btnSelectEventTime;
     private Button btnLightningSave;
 
     private FirebaseAuth auth;
@@ -34,6 +42,12 @@ public class LightningCreateActivity extends AppCompatActivity {
     private String routeStart;
     private String routeEnd;
 
+    // 🔹 선택된 모임 시간 (epoch millis)
+    private long eventTimeMillis = -1L;
+
+    private final SimpleDateFormat eventTimeFormat =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +57,10 @@ public class LightningCreateActivity extends AppCompatActivity {
         etLightningDescription = findViewById(R.id.etLightningDescription);
         etLightningLocation = findViewById(R.id.etLightningLocation);
         tvLinkedRoute = findViewById(R.id.tvLinkedRoute);
+
+        tvLightningEventTime = findViewById(R.id.tvLightningEventTime);
+        btnSelectEventTime = findViewById(R.id.btnSelectEventTime);
+
         btnLightningSave = findViewById(R.id.btnLightningSave);
 
         auth = FirebaseAuth.getInstance();
@@ -62,7 +80,48 @@ public class LightningCreateActivity extends AppCompatActivity {
             tvLinkedRoute.setText("연결된 루트 없음");
         }
 
+        // 🔹 모임 날짜/시간 선택 버튼
+        btnSelectEventTime.setOnClickListener(v -> openDateTimePicker());
+
         btnLightningSave.setOnClickListener(v -> saveLightning());
+    }
+
+    private void openDateTimePicker() {
+        final Calendar cal = Calendar.getInstance();
+
+        DatePickerDialog dp = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    cal.set(Calendar.YEAR, year);
+                    cal.set(Calendar.MONTH, month);
+                    cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                    // 날짜 고른 뒤 시간 선택
+                    TimePickerDialog tp = new TimePickerDialog(
+                            this,
+                            (timeView, hourOfDay, minute) -> {
+                                cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                                cal.set(Calendar.MINUTE, minute);
+                                cal.set(Calendar.SECOND, 0);
+                                cal.set(Calendar.MILLISECOND, 0);
+
+                                eventTimeMillis = cal.getTimeInMillis();
+                                tvLightningEventTime.setText(
+                                        eventTimeFormat.format(cal.getTime())
+                                );
+                            },
+                            cal.get(Calendar.HOUR_OF_DAY),
+                            cal.get(Calendar.MINUTE),
+                            true
+                    );
+                    tp.show();
+                },
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH)
+        );
+
+        dp.show();
     }
 
     private void saveLightning() {
@@ -72,6 +131,11 @@ public class LightningCreateActivity extends AppCompatActivity {
 
         if (TextUtils.isEmpty(title)) {
             Toast.makeText(this, "번개 제목을 입력해주세요.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (eventTimeMillis <= 0) {
+            Toast.makeText(this, "모임 날짜/시간을 선택해주세요.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -99,6 +163,9 @@ public class LightningCreateActivity extends AppCompatActivity {
         data.put("hostNickname", finalHostNickname);
         data.put("createdAt", System.currentTimeMillis());
 
+        // 모임 시간 저장
+        data.put("eventTime", eventTimeMillis);
+
         if (!TextUtils.isEmpty(location)) {
             data.put("locationDesc", location);
         }
@@ -113,7 +180,7 @@ public class LightningCreateActivity extends AppCompatActivity {
         db.collection("lightnings")
                 .add(data)
                 .addOnSuccessListener((DocumentReference ref) -> {
-                    // 🔹 방장을 자동 참가자로 등록
+                    // 방장을 자동 참가자로 등록
                     Map<String, Object> participant = new HashMap<>();
                     participant.put("nickname", finalHostNickname);
                     participant.put("joinedAt", System.currentTimeMillis());

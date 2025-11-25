@@ -48,6 +48,7 @@ public class LightningDetailActivity extends AppCompatActivity {
 
     private TextView tvParticipantSummary;
     private TextView tvParticipantList;
+    private TextView tvLightningEventTime;
     private android.widget.Button btnToggleJoin;
 
     private MapView lightningMapView;
@@ -83,6 +84,7 @@ public class LightningDetailActivity extends AppCompatActivity {
         tvLightningTitle = findViewById(R.id.tvLightningTitle);
         tvLightningMeta = findViewById(R.id.tvLightningMeta);
         tvLightningDescription = findViewById(R.id.tvLightningDescription);
+        tvLightningEventTime = findViewById(R.id.tvLightningEventTime);
         tvLightningLocation = findViewById(R.id.tvLightningLocation);
         tvLinkedRouteInfo = findViewById(R.id.tvLinkedRouteInfo);
 
@@ -165,6 +167,13 @@ public class LightningDetailActivity extends AppCompatActivity {
             createdAt = ((Number) createdRaw).longValue();
         }
 
+        Long eventTime = null;
+        Object eventRaw = doc.get("eventTime");
+        if (eventRaw instanceof Number) {
+            eventTime = ((Number) eventRaw).longValue();
+        }
+
+
         routeId = safeString(doc.getString("routeId"));
         routeTitle = safeString(doc.getString("routeTitle"));
 
@@ -189,6 +198,13 @@ public class LightningDetailActivity extends AppCompatActivity {
 
         tvLightningMeta.setText("호스트: " + hostLabel + " / 생성 시각: " + timeText);
         tvLightningDescription.setText(desc.isEmpty() ? "설명이 없습니다." : desc);
+
+        if (eventTime != null) {
+            SimpleDateFormat sdfEvent = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+            tvLightningEventTime.setText("모임 시간: " + sdfEvent.format(new Date(eventTime)));
+        } else {
+            tvLightningEventTime.setText("모임 시간: 미정");
+        }
 
         if (!locationDesc.isEmpty()) {
             tvLightningLocation.setText("모임 위치: " + locationDesc);

@@ -42,15 +42,27 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- 🔹 모임 시간 -->
+    <TextView
+        android:id="@+id/tvLightningEventTime"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="4dp"
+        android:text="모임 시간: 미정"
+        app:layout_constraintTop_toBottomOf="@id/tvLightningDescription"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <!-- 모임 위치 소개 -->
     <TextView
         android:id="@+id/tvLightningLocation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:text="모임 위치: 미정"
-        app:layout_constraintTop_toBottomOf="@id/tvLightningDescription"
+        app:layout_constraintTop_toBottomOf="@id/tvLightningEventTime"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -67,7 +79,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- 참가자 요약 (몇 명) -->
+    <!-- 참가자 요약 -->
     <TextView
         android:id="@+id/tvParticipantSummary"
         android:layout_width="0dp"
