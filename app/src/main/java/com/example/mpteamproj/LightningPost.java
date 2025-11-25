@@ -11,6 +11,9 @@ public class LightningPost {
     private String routeStart;
     private String routeEnd;
 
+    private int participantCount;
+    private boolean joined;   // 현재 로그인 유저가 참가중인지
+
     public LightningPost() {}
 
     public String getId() { return id; }
@@ -39,4 +42,13 @@ public class LightningPost {
 
     public String getRouteEnd() { return routeEnd; }
     public void setRouteEnd(String routeEnd) { this.routeEnd = routeEnd; }
+
+    // Participants
+    public int getParticipantCount() {return participantCount;}
+
+    public void setParticipantCount(int participantCount) { this.participantCount = participantCount;}
+
+    public boolean isJoined() {return joined;}
+
+    public void setJoined(boolean joined) {this.joined = joined;}
 }

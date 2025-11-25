@@ -8,15 +8,18 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 public class LightningAdapter extends RecyclerView.Adapter<LightningAdapter.LightningViewHolder> {
+
+    private final List<LightningPost> items;
 
     public interface OnItemClickListener {
         void onItemClick(LightningPost item);
     }
 
-    private final List<LightningPost> items;
     private OnItemClickListener listener;
 
     public LightningAdapter(List<LightningPost> items) {
@@ -37,20 +40,35 @@ public class LightningAdapter extends RecyclerView.Adapter<LightningAdapter.Ligh
 
     @Override
     public void onBindViewHolder(@NonNull LightningViewHolder holder, int position) {
-        LightningPost post = items.get(position);
-        holder.tvTitle.setText(post.getTitle());
-        holder.tvDesc.setText(post.getDescription());
+        LightningPost item = items.get(position);
 
-        if (post.getRouteId() != null && !post.getRouteId().isEmpty()) {
-            holder.tvRouteTag.setText("루트 연결됨");
-            holder.tvRouteTag.setVisibility(View.VISIBLE);
+        holder.tvTitle.setText(item.getTitle().isEmpty() ? "제목 없음" : item.getTitle());
+
+        // 호스트 + 시간
+        String host = item.getHostUid().isEmpty()
+                ? "호스트 미정"
+                : item.getHostUid();
+
+        String timeText = "시간 정보 없음";
+        if (item.getCreatedAt() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm", Locale.getDefault());
+            timeText = sdf.format(item.getCreatedAt());
+        }
+        holder.tvMeta.setText("호스트: " + host + " / 생성: " + timeText);
+
+        // 참가자 수
+        holder.tvParticipants.setText("참가자: " + item.getParticipantCount() + "명");
+
+        // 참여중 뱃지
+        if (item.isJoined()) {
+            holder.tvJoinedBadge.setVisibility(View.VISIBLE);
         } else {
-            holder.tvRouteTag.setVisibility(View.GONE);
+            holder.tvJoinedBadge.setVisibility(View.GONE);
         }
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onItemClick(post);
+                listener.onItemClick(item);
             }
         });
     }
@@ -61,15 +79,18 @@ public class LightningAdapter extends RecyclerView.Adapter<LightningAdapter.Ligh
     }
 
     static class LightningViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle;
-        TextView tvDesc;
-        TextView tvRouteTag;
 
-        LightningViewHolder(@NonNull View itemView) {
+        TextView tvTitle;
+        TextView tvMeta;
+        TextView tvParticipants;
+        TextView tvJoinedBadge;
+
+        public LightningViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvLightningItemTitle);
-            tvDesc = itemView.findViewById(R.id.tvLightningItemDesc);
-            tvRouteTag = itemView.findViewById(R.id.tvLightningItemRouteTag);
+            tvMeta = itemView.findViewById(R.id.tvLightningItemMeta);
+            tvParticipants = itemView.findViewById(R.id.tvLightningItemParticipants);
+            tvJoinedBadge = itemView.findViewById(R.id.tvJoinedBadge);
         }
     }
 }

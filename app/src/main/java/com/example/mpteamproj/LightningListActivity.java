@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -24,7 +26,11 @@ public class LightningListActivity extends AppCompatActivity {
     private final List<LightningPost> items = new ArrayList<>();
     private FirebaseFirestore db;
 
-    private Button btnCreateLightningFromList; // 🔹 추가
+    private Button btnCreateLightningFromList;
+
+    // 현재 로그인 유저
+    private FirebaseAuth auth;
+    private String currentUid;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -32,15 +38,21 @@ public class LightningListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_lightning_list);
 
         rvLightnings = findViewById(R.id.rvLightnings);
-        btnCreateLightningFromList = findViewById(R.id.btnCreateLightningFromList); // 🔹
+        btnCreateLightningFromList = findViewById(R.id.btnCreateLightningFromList);
+
+        db = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
+
+        FirebaseUser user = auth.getCurrentUser();
+        if (user != null) {
+            currentUid = user.getUid();
+        }
 
         adapter = new LightningAdapter(items);
         rvLightnings.setLayoutManager(new LinearLayoutManager(this));
         rvLightnings.setAdapter(adapter);
 
-        db = FirebaseFirestore.getInstance();
-
-        // 번개 목록에서 아이템 클릭 → 상세로 이동
+        // 아이템 클릭 → 상세로 이동
         adapter.setOnItemClickListener(item -> {
             if (item.getId() == null || item.getId().isEmpty()) return;
             Intent intent = new Intent(
@@ -51,13 +63,12 @@ public class LightningListActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // "번개 생성" 버튼 → 루트 없이 LightningCreateActivity 열기
+        // "번개 생성" 버튼 → 루트 없이 번개 생성
         btnCreateLightningFromList.setOnClickListener(v -> {
             Intent intent = new Intent(
                     LightningListActivity.this,
                     LightningCreateActivity.class
             );
-            // routeId, routeTitle 같은 extra 안 넣음 → "연결된 루트 없음" 상태로 열림
             startActivity(intent);
         });
 
@@ -76,6 +87,7 @@ public class LightningListActivity extends AppCompatActivity {
                     }
 
                     items.clear();
+
                     if (snapshots != null) {
                         for (DocumentSnapshot doc : snapshots) {
                             LightningPost post = doc.toObject(LightningPost.class);
@@ -85,7 +97,53 @@ public class LightningListActivity extends AppCompatActivity {
                             }
                         }
                     }
+
                     adapter.notifyDataSetChanged();
+
+                    // 🔹 각 번개에 대해 참가자 요약 정보 로딩
+                    for (int i = 0; i < items.size(); i++) {
+                        LightningPost post = items.get(i);
+                        loadParticipantSummary(post, i);
+                    }
+                });
+    }
+
+    // participants 컬렉션에서 참가자 수 + 참여 여부 확인
+    private void loadParticipantSummary(LightningPost post, int position) {
+        if (post.getId() == null || post.getId().isEmpty()) return;
+
+        db.collection("lightnings")
+                .document(post.getId())
+                .collection("participants")
+                .get()
+                .addOnSuccessListener(snap -> {
+                    int count = 0;
+                    boolean joined = false;
+
+                    if (snap != null) {
+                        count = snap.size();
+                        if (currentUid != null) {
+                            for (DocumentSnapshot d : snap) {
+                                if (currentUid.equals(d.getId())) {
+                                    joined = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    post.setParticipantCount(count);
+                    post.setJoined(joined);
+
+                    // 해당 아이템만 갱신
+                    if (position >= 0 && position < items.size()) {
+                        adapter.notifyItemChanged(position);
+                    }
+                })
+                .addOnFailureListener(err -> {
+                    // 실패해도 리스트 전체는 사용 가능하니까 토스트 정도만
+                    // (원하면 조용히 무시해도 됨)
+                    // Toast.makeText(this, "참가자 정보 로딩 실패", Toast.LENGTH_SHORT).show();
                 });
     }
 }
