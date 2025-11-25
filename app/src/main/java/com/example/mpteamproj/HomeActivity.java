@@ -14,7 +14,8 @@ public class HomeActivity extends AppCompatActivity {
     private EditText etSearchRoute;
     private Button btnCreateRoute;
     private Button btnBrowseRoute;
-    private Button btnLightning;   // 🔹 추가
+    private Button btnLightning;
+    private Button btnMyPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +26,7 @@ public class HomeActivity extends AppCompatActivity {
         btnCreateRoute = findViewById(R.id.btnCreateRoute);
         btnBrowseRoute = findViewById(R.id.btnBrowseRoute);
         btnLightning = findViewById(R.id.btnLightning);
+        btnMyPage = findViewById(R.id.btnMyPage);
 
         etSearchRoute.setOnEditorActionListener((textView, actionId, event) -> {
             String keyword = etSearchRoute.getText().toString().trim();
@@ -46,10 +48,15 @@ public class HomeActivity extends AppCompatActivity {
                 }
         );
 
-        // 🔹 번개 둘러보기 버튼 → LightningListActivity로 이동
+        // 번개 둘러보기 버튼 → LightningListActivity로 이동
         btnLightning.setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, LightningListActivity.class);
             startActivity(intent);
+        });
+
+
+        btnMyPage.setOnClickListener(v -> {
+            startActivity(new Intent(HomeActivity.this, MyPageActivity.class));
         });
     }
 }

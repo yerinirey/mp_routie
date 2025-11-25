@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:orientation="vertical">
+
+        <!-- 섹션: 프로필 -->
+        <TextView
+            android:id="@+id/tvMyPageTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="마이페이지"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingBottom="16dp" />
+
+        <TextView
+            android:id="@+id/tvCurrentEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="이메일: "
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvCurrentNicknameLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="현재 닉네임"
+            android:textSize="14sp"
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:id="@+id/tvCurrentNickname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="닉네임 없음"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingVertical="4dp" />
+
+        <EditText
+            android:id="@+id/etNewNickname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="새 닉네임 입력"
+            android:inputType="textPersonName"
+            android:padding="8dp"
+            android:layout_marginTop="8dp" />
+
+        <Button
+            android:id="@+id/btnSaveNickname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="닉네임 저장"
+            android:layout_marginTop="8dp" />
+
+        <!-- 구분선 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#DDDDDD"
+            android:layout_marginVertical="16dp" />
+
+        <!-- 섹션: 동네 -->
+        <TextView
+            android:id="@+id/tvTownLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="현재 동네"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvCurrentTown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="알 수 없음"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingVertical="4dp" />
+
+        <Button
+            android:id="@+id/btnRefreshLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="위치 새로고침"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+</ScrollView>

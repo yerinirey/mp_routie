@@ -57,6 +57,8 @@ public class LightningDetailActivity extends AppCompatActivity {
     private FirebaseAuth auth;
 
     private String lightningId;
+    private String lightningHostUid;
+    private Long lightningCreatedAt;
 
     // route 정보
     private String routeId;
@@ -160,6 +162,7 @@ public class LightningDetailActivity extends AppCompatActivity {
         String title = safeString(doc.getString("title"));
         String desc = safeString(doc.getString("description"));
         String hostUid = safeString(doc.getString("hostUid"));
+        lightningHostUid = safeString(doc.getString("hostUid"));
         String hostNickname = safeString(doc.getString("hostNickname"));
         String locationDesc = safeString(doc.getString("locationDesc"));
 
@@ -194,16 +197,18 @@ public class LightningDetailActivity extends AppCompatActivity {
             timeText = "시간 정보 없음";
         }
 
-        String hostLabel;
+        String initialHostLabel;
         if (!hostNickname.isEmpty()) {
-            hostLabel = hostNickname;
-        } else if (!hostUid.isEmpty()) {
-            hostLabel = hostUid;
+            initialHostLabel = hostNickname;
+        } else if (!lightningHostUid.isEmpty()) {
+            initialHostLabel = lightningHostUid;
         } else {
-            hostLabel = "알 수 없음";
+            initialHostLabel = "알 수 없음";
         }
+        setHostMetaText(initialHostLabel);
 
-        tvLightningMeta.setText("호스트: " + hostLabel + " / 생성 시각: " + timeText);
+
+        tvLightningMeta.setText("호스트: " + initialHostLabel + " / 생성 시각: " + timeText);
         tvLightningDescription.setText(desc.isEmpty() ? "설명이 없습니다." : desc);
 
         if (eventTime != null) {
@@ -226,6 +231,7 @@ public class LightningDetailActivity extends AppCompatActivity {
         } else {
             tvLinkedRouteInfo.setText("연결된 루트: 없음");
         }
+        loadLatestHostNickname();
     }
 
     // ---------- 참가자 리스너 & 토글 ----------
@@ -469,6 +475,34 @@ public class LightningDetailActivity extends AppCompatActivity {
             }
             kakaoMap.moveCamera(update);
         }
+    }
+    private void setHostMetaText(String hostLabel) {
+        String timeText = "시간 정보 없음";
+        if (lightningCreatedAt != null) {
+            java.text.SimpleDateFormat sdf =
+                    new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault());
+            timeText = sdf.format(new java.util.Date(lightningCreatedAt));
+        }
+
+        tvLightningMeta.setText("호스트: " + hostLabel + " / 생성 시각: " + timeText);
+    }
+
+    private void loadLatestHostNickname() {
+        if (TextUtils.isEmpty(lightningHostUid)) return;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users")
+                .document(lightningHostUid)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    if (snap != null && snap.exists()) {
+                        String latestNick = snap.getString("nickname");
+                        if (!TextUtils.isEmpty(latestNick)) {
+                            // 최신 닉네임으로 다시 덮어쓰기
+                            setHostMetaText(latestNick);
+                        }
+                    }
+                });
     }
 
     private String safeString(String v) {

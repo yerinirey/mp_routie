@@ -171,15 +171,32 @@ public class LightningListActivity extends AppCompatActivity {
                     post.setParticipantCount(count);
                     post.setJoined(joined);
 
-                    // 🔹 "참가한" 필터일 수도 있으니, 매번 필터 재적용
+                    // "참가한" 필터일 수도 있으니, 매번 필터 재적용
                     applyFilter();
                 })
                 .addOnFailureListener(err -> {
                     // 실패해도 조용히 무시해도 OK
                 });
+        String hostUidRaw = post.getHostUidRaw();  // 진짜 UID
+        if (hostUidRaw == null || hostUidRaw.isEmpty()) return;
+
+        db.collection("users")
+                .document(hostUidRaw)
+                .get()
+                .addOnSuccessListener(userSnap -> {
+                    if (userSnap != null && userSnap.exists()) {
+                        String latestNick = userSnap.getString("nickname");
+                        if (latestNick != null && !latestNick.isEmpty()) {
+                            post.setHostNickname(latestNick);  // 닉네임 덮어쓰기
+
+                            // 화면갱신
+                            applyFilter();   // displayItems 다시 만들고 adapter.notifyDataSetChanged()
+                        }
+                    }
+                });
     }
 
-    // 🔹 현재 필터에 맞게 displayItems 구성
+    // 현재 필터 displayItems 구성
     private void applyFilter() {
         displayItems.clear();
 
