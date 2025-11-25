@@ -65,6 +65,13 @@ public class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHol
 
         holder.tvLikes.setText("🧡 " + post.getLikeCount());
 
+        if (!TextUtils.isEmpty(post.getTag())) {
+            holder.tvTag.setText("태그: " + post.getTag());
+            holder.tvTag.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvTag.setVisibility(View.GONE);
+        }
+
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onItemClick(post);
@@ -82,6 +89,7 @@ public class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHol
         TextView tvInfo;
         TextView tvMemo;
         TextView tvLikes;
+        TextView tvTag;
 
         public RouteViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -89,6 +97,7 @@ public class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHol
             tvInfo  = itemView.findViewById(R.id.tvRouteInfo);
             tvMemo  = itemView.findViewById(R.id.tvRouteMemo);
             tvLikes = itemView.findViewById(R.id.tvRouteLikes);
+            tvTag   = itemView.findViewById(R.id.tvRouteTag);
         }
     }
 }

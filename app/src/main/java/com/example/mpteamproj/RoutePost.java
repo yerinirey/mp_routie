@@ -8,6 +8,7 @@ public class RoutePost {
     private String endPlace;
     private String startLabel;
     private String endLabel;
+    private String tag;
     private String memo;
     private String hostUid;
     private Long createdAt;
@@ -71,7 +72,8 @@ public class RoutePost {
     }
 
     public void setHostUid(String hostUid) { this.hostUid = hostUid; }
-
+    public String getTag() { return tag != null ? tag : ""; }
+    public void setTag(String tag) { this.tag = tag; }
     public Long getCreatedAt() {
         return createdAt;
     }

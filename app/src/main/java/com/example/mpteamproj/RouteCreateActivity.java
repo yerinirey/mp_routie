@@ -38,8 +38,10 @@ public class RouteCreateActivity extends AppCompatActivity {
 
     private EditText etRouteTitle;
     private EditText etRouteDescription;
+    private EditText etRouteTag;
     private EditText etStartLabel;
     private EditText etEndLabel;
+
     private TextView tvPointCount;
     private TextView tvStartPoint;
     private TextView tvEndPoint;
@@ -66,6 +68,7 @@ public class RouteCreateActivity extends AppCompatActivity {
 
         etRouteTitle = findViewById(R.id.etRouteTitle);
         etRouteDescription = findViewById(R.id.etRouteDescription);
+        etRouteTag = findViewById(R.id.etRouteTag);
         etStartLabel = findViewById(R.id.et_start_label);
         etEndLabel   = findViewById(R.id.et_end_label);
         tvPointCount = findViewById(R.id.tvPointCount);
@@ -223,6 +226,7 @@ public class RouteCreateActivity extends AppCompatActivity {
     private void saveRoute() {
         String title = etRouteTitle.getText().toString().trim();
         String description = etRouteDescription.getText().toString().trim();
+        String tag = etRouteTag.getText().toString().trim();
         String startLabel = etStartLabel.getText().toString().trim();
         String endLabel   = etEndLabel.getText().toString().trim();
 
@@ -295,6 +299,9 @@ public class RouteCreateActivity extends AppCompatActivity {
         }
         if (!TextUtils.isEmpty(endLabel)) {
             data.put("endLabel", endLabel);
+        }
+        if (!TextUtils.isEmpty(tag)) {
+            data.put("tag", tag);
         }
 
         db.collection("routes")

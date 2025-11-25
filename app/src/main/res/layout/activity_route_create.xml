@@ -21,6 +21,12 @@
         android:layout_marginTop="8dp"
         android:padding="8dp" />
     <EditText
+        android:id="@+id/etRouteTag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="태그 (예: 러닝 / 산책)"
+        android:padding="8dp" />
+    <EditText
         android:id="@+id/et_start_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

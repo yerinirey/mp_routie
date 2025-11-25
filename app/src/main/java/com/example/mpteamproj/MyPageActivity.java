@@ -1,6 +1,7 @@
 package com.example.mpteamproj;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -62,6 +63,8 @@ public class MyPageActivity extends AppCompatActivity {
 
         tvCurrentTown = findViewById(R.id.tvCurrentTown);
         btnRefreshLocation = findViewById(R.id.btnRefreshLocation);
+        Button btnMyCreatedRoutes = findViewById(R.id.btnMyCreatedRoutes);
+        Button btnMyLikedRoutes   = findViewById(R.id.btnMyLikedRoutes);
 
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -73,7 +76,17 @@ public class MyPageActivity extends AppCompatActivity {
             finish();
             return;
         }
+        btnMyCreatedRoutes.setOnClickListener(v -> {
+            Intent intent = new Intent(MyPageActivity.this, MyRoutesActivity.class);
+            intent.putExtra(MyRoutesActivity.EXTRA_MODE, "created");
+            startActivity(intent);
+        });
 
+        btnMyLikedRoutes.setOnClickListener(v -> {
+            Intent intent = new Intent(MyPageActivity.this, MyRoutesActivity.class);
+            intent.putExtra(MyRoutesActivity.EXTRA_MODE, "liked");
+            startActivity(intent);
+        });
         // 이메일 / 닉네임 초기 표시
         String email = currentUser.getEmail();
         tvCurrentEmail.setText("이메일: " + (email != null ? email : "알 수 없음"));

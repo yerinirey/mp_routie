@@ -43,6 +43,7 @@ public class LightningCreateActivity extends AppCompatActivity {
     private String routeTitle;
     private String routeStart;
     private String routeEnd;
+    private String routeTag;
 
     // 모임 시간
     private long eventTimeMillis = -1L;
@@ -72,6 +73,8 @@ public class LightningCreateActivity extends AppCompatActivity {
         routeTitle = getIntent().getStringExtra("routeTitle");
         routeStart = getIntent().getStringExtra("routeStart");
         routeEnd = getIntent().getStringExtra("routeEnd");
+        routeTag = getIntent().getStringExtra("routeTag");
+        if (routeTag == null) routeTag = "";
 
         if (!TextUtils.isEmpty(routeId) && !TextUtils.isEmpty(routeTitle)) {
             tvLinkedRoute.setText("연결된 루트: " + routeTitle);
@@ -164,6 +167,7 @@ public class LightningCreateActivity extends AppCompatActivity {
         data.put("createdAt", System.currentTimeMillis());
         data.put("eventTime", eventTimeMillis);    // 모임 시간
 
+
         if (!TextUtils.isEmpty(location)) {
             data.put("locationDesc", location);
         }
@@ -186,6 +190,9 @@ public class LightningCreateActivity extends AppCompatActivity {
             data.put("routeTitle", routeTitle);
             data.put("routeStart", routeStart);
             data.put("routeEnd", routeEnd);
+        }
+        if (!TextUtils.isEmpty(routeTag)) {
+            data.put("routeTag", routeTag);
         }
 
         db.collection("lightnings")

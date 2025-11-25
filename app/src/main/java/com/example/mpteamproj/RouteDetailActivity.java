@@ -41,6 +41,8 @@ public class RouteDetailActivity extends AppCompatActivity {
 
     private TextView tvDetailRouteTitle;
     private TextView tvDetailRouteDesc;
+    private TextView tvDetailRouteTag;
+    private String currentRouteTag = "";
     private TextView tvDetailStart;
     private TextView tvDetailEnd;
     private TextView tvDetailLikes;
@@ -75,6 +77,7 @@ public class RouteDetailActivity extends AppCompatActivity {
 
         tvDetailRouteTitle = findViewById(R.id.tvDetailRouteTitle);
         tvDetailRouteDesc  = findViewById(R.id.tvDetailRouteDesc);
+        tvDetailRouteTag   = findViewById(R.id.tvDetailRouteTag);
         tvDetailStart      = findViewById(R.id.tvDetailStart);
         tvDetailEnd        = findViewById(R.id.tvDetailEnd);
         tvDetailLikes      = findViewById(R.id.tvDetailLikes);
@@ -112,6 +115,7 @@ public class RouteDetailActivity extends AppCompatActivity {
                 intent.putExtra("routeTitle", tvDetailRouteTitle.getText().toString());
                 intent.putExtra("routeStart", tvDetailStart.getText().toString());
                 intent.putExtra("routeEnd", tvDetailEnd.getText().toString());
+                intent.putExtra("routeTag", currentRouteTag);
                 startActivity(intent);
             });
         }
@@ -171,8 +175,16 @@ public class RouteDetailActivity extends AppCompatActivity {
 
         String title       = safeString(doc.getString("title"));
         String description = safeString(doc.getString("description"));
+        String tag = safeString(doc.getString("tag"));
         String startPlace  = safeString(doc.getString("startPlace"));
         String endPlace    = safeString(doc.getString("endPlace"));
+
+        currentRouteTag = tag;
+        if (TextUtils.isEmpty(tag)) {
+            tvDetailRouteTag.setText("태그: 없음");
+        } else {
+            tvDetailRouteTag.setText("태그: " + tag);
+        }
 
         Double sLat = doc.getDouble("startLat");
         Double sLng = doc.getDouble("startLng");
@@ -327,6 +339,7 @@ public class RouteDetailActivity extends AppCompatActivity {
             Map<String, Object> data = new HashMap<>();
             data.put("nickname", nick);
             data.put("likedAt", System.currentTimeMillis());
+            data.put("uid", currentUid);
 
             db.collection("routes")
                     .document(routeId)

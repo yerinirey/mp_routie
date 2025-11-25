@@ -49,6 +49,7 @@ public class LightningDetailActivity extends AppCompatActivity {
     private TextView tvParticipantSummary;
     private TextView tvParticipantList;
     private TextView tvLightningEventTime;
+    private TextView tvLightningTag;
     private android.widget.Button btnToggleJoin;
 
     private MapView lightningMapView;
@@ -94,6 +95,7 @@ public class LightningDetailActivity extends AppCompatActivity {
 
         tvParticipantSummary = findViewById(R.id.tvParticipantSummary);
         tvParticipantList = findViewById(R.id.tvParticipantList);
+        tvLightningTag = findViewById(R.id.tvLightningTag);
         btnToggleJoin = findViewById(R.id.btnToggleJoin);
 
         lightningMapView = findViewById(R.id.lightningMapView);
@@ -165,6 +167,7 @@ public class LightningDetailActivity extends AppCompatActivity {
         lightningHostUid = safeString(doc.getString("hostUid"));
         String hostNickname = safeString(doc.getString("hostNickname"));
         String locationDesc = safeString(doc.getString("locationDesc"));
+        String routeTag = safeString(doc.getString("routeTag"));
 
         Long createdAt = null;
         Object createdRaw = doc.get("createdAt");
@@ -188,6 +191,12 @@ public class LightningDetailActivity extends AppCompatActivity {
         routeTitle = safeString(doc.getString("routeTitle"));
 
         tvLightningTitle.setText(title.isEmpty() ? "번개 상세" : title);
+
+        if (TextUtils.isEmpty(routeTag)) {
+            tvLightningTag.setText("태그: 없음");
+        } else {
+            tvLightningTag.setText("태그: " + routeTag);
+        }
 
         String timeText;
         if (createdAt != null) {

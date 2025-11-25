@@ -36,6 +36,13 @@
         android:layout_height="wrap_content"
         android:text="출발 → 도착"
         android:textSize="14sp" />
+    <TextView
+        android:id="@+id/tvRouteTag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="태그: 러닝"
+        android:textSize="12sp"
+        android:textColor="#666666" />
 
     <TextView
         android:id="@+id/tvRouteMemo"

@@ -78,6 +78,13 @@
         app:layout_constraintTop_toBottomOf="@id/tvLightningLocation"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+    <TextView
+        android:id="@+id/tvLightningTag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="태그: 없음"
+        android:textSize="14sp"
+        android:layout_marginHorizontal="16dp" />
 
     <!-- 참가자 요약 -->
     <TextView

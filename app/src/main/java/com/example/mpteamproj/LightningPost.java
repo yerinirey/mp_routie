@@ -14,6 +14,7 @@ public class LightningPost {
     private Long eventTime;
     private String routeId;
     private String routeTitle;
+    private String routeTag;
     private String locationDesc;
 
     // 참가 관련
@@ -85,4 +86,11 @@ public class LightningPost {
 
     public boolean isJoined() { return joined; }
     public void setJoined(boolean joined) { this.joined = joined; }
+    public String getRouteTag() {
+        return routeTag != null ? routeTag : "";
+    }
+
+    public void setRouteTag(String routeTag) {
+        this.routeTag = routeTag;
+    }
 }

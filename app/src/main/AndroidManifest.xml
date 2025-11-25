@@ -32,6 +32,7 @@
         <activity android:name=".RouteListActivity" />
         <activity android:name=".RouteDetailActivity" />
         <activity android:name=".MyPageActivity" />
+        <activity android:name=".MyRoutesActivity" />
 
         <!--        <activity-->
 <!--            android:name=".MainActivity"-->
