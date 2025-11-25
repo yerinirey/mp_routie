@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -21,7 +22,7 @@ public class LightningCreateActivity extends AppCompatActivity {
 
     private EditText etLightningTitle;
     private EditText etLightningDescription;
-    private EditText etLightningLocation;  // 🔹 위치 소개
+    private EditText etLightningLocation;
     private TextView tvLinkedRoute;
     private Button btnLightningSave;
 
@@ -67,7 +68,7 @@ public class LightningCreateActivity extends AppCompatActivity {
     private void saveLightning() {
         String title = etLightningTitle.getText().toString().trim();
         String desc = etLightningDescription.getText().toString().trim();
-        String location = etLightningLocation.getText().toString().trim(); // 🔹 위치 소개
+        String location = etLightningLocation.getText().toString().trim();
 
         if (TextUtils.isEmpty(title)) {
             Toast.makeText(this, "번개 제목을 입력해주세요.", Toast.LENGTH_SHORT).show();
@@ -80,24 +81,24 @@ public class LightningCreateActivity extends AppCompatActivity {
             return;
         }
 
-        String hostUid = user.getUid();
+        final String hostUid = user.getUid();
         String hostNickname = user.getDisplayName();
-        if (hostNickname == null || hostNickname.isEmpty()) {
+        if (TextUtils.isEmpty(hostNickname)) {
             if (user.getEmail() != null && !user.getEmail().isEmpty()) {
                 hostNickname = user.getEmail();
             } else {
                 hostNickname = hostUid;
             }
         }
+        final String finalHostNickname = hostNickname;
 
         Map<String, Object> data = new HashMap<>();
         data.put("title", title);
         data.put("description", desc);
         data.put("hostUid", hostUid);
-        data.put("hostNickname", hostNickname);
+        data.put("hostNickname", finalHostNickname);
         data.put("createdAt", System.currentTimeMillis());
 
-        // 🔹 위치 소개는 선택 입력이라 비어 있으면 안 넣어도 됨
         if (!TextUtils.isEmpty(location)) {
             data.put("locationDesc", location);
         }
@@ -111,7 +112,16 @@ public class LightningCreateActivity extends AppCompatActivity {
 
         db.collection("lightnings")
                 .add(data)
-                .addOnSuccessListener(ref -> {
+                .addOnSuccessListener((DocumentReference ref) -> {
+                    // 🔹 방장을 자동 참가자로 등록
+                    Map<String, Object> participant = new HashMap<>();
+                    participant.put("nickname", finalHostNickname);
+                    participant.put("joinedAt", System.currentTimeMillis());
+
+                    ref.collection("participants")
+                            .document(hostUid)
+                            .set(participant);
+
                     Toast.makeText(this, "번개가 생성되었습니다.", Toast.LENGTH_SHORT).show();
                     finish();
                 })

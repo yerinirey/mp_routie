@@ -9,8 +9,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.kakao.vectormap.KakaoMap;
 import com.kakao.vectormap.KakaoMapReadyCallback;
 import com.kakao.vectormap.LatLng;
@@ -28,6 +31,7 @@ import com.kakao.vectormap.shape.ShapeLayer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -41,14 +45,26 @@ public class LightningDetailActivity extends AppCompatActivity {
     private TextView tvLightningDescription;
     private TextView tvLightningLocation;
     private TextView tvLinkedRouteInfo;
+
+    private TextView tvParticipantSummary;
+    private TextView tvParticipantList;
+    private android.widget.Button btnToggleJoin;
+
     private MapView lightningMapView;
 
     private FirebaseFirestore db;
+    private FirebaseAuth auth;
+
     private String lightningId;
 
     // route 정보
     private String routeId;
     private String routeTitle;
+
+    // 참가자 상태
+    private String currentUid;
+    private String currentNickname;
+    private boolean isJoined = false;
 
     // 지도 관련
     private KakaoMap kakaoMap;
@@ -69,9 +85,15 @@ public class LightningDetailActivity extends AppCompatActivity {
         tvLightningDescription = findViewById(R.id.tvLightningDescription);
         tvLightningLocation = findViewById(R.id.tvLightningLocation);
         tvLinkedRouteInfo = findViewById(R.id.tvLinkedRouteInfo);
+
+        tvParticipantSummary = findViewById(R.id.tvParticipantSummary);
+        tvParticipantList = findViewById(R.id.tvParticipantList);
+        btnToggleJoin = findViewById(R.id.btnToggleJoin);
+
         lightningMapView = findViewById(R.id.lightningMapView);
 
         db = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
 
         lightningId = getIntent().getStringExtra(EXTRA_LIGHTNING_ID);
         if (TextUtils.isEmpty(lightningId)) {
@@ -80,11 +102,37 @@ public class LightningDetailActivity extends AppCompatActivity {
             return;
         }
 
-        initMap();      // 지도 준비 시작
-        loadLightning(); // 번개 데이터 로드
+        // 현재 로그인 유저 정보
+        FirebaseUser user = auth.getCurrentUser();
+        if (user != null) {
+            currentUid = user.getUid();
+            currentNickname = user.getDisplayName();
+            if (TextUtils.isEmpty(currentNickname)) {
+                if (!TextUtils.isEmpty(user.getEmail())) {
+                    currentNickname = user.getEmail();
+                } else {
+                    currentNickname = currentUid;
+                }
+            }
+        }
+
+        if (currentUid == null) {
+            btnToggleJoin.setText("로그인 필요");
+            btnToggleJoin.setEnabled(false);
+        } else {
+            btnToggleJoin.setOnClickListener(v -> toggleJoin());
+        }
+
+        // 참가자 실시간 리스너
+        startParticipantListener();
+
+        // 지도 & 번개 데이터 로딩
+        initMap();
+        loadLightning();
     }
 
-    // 번개 문서 읽기
+    // ---------- 번개 기본 정보 로드 ----------
+
     private void loadLightning() {
         db.collection("lightnings")
                 .document(lightningId)
@@ -109,7 +157,7 @@ public class LightningDetailActivity extends AppCompatActivity {
         String desc = safeString(doc.getString("description"));
         String hostUid = safeString(doc.getString("hostUid"));
         String hostNickname = safeString(doc.getString("hostNickname"));
-        String locationDesc = safeString(doc.getString("locationDesc")); // 🔹 새 필드
+        String locationDesc = safeString(doc.getString("locationDesc"));
 
         Long createdAt = null;
         Object createdRaw = doc.get("createdAt");
@@ -130,7 +178,6 @@ public class LightningDetailActivity extends AppCompatActivity {
             timeText = "시간 정보 없음";
         }
 
-        // 호스트 이름: 닉네임 > UID > "알 수 없음"
         String hostLabel;
         if (!hostNickname.isEmpty()) {
             hostLabel = hostNickname;
@@ -141,31 +188,119 @@ public class LightningDetailActivity extends AppCompatActivity {
         }
 
         tvLightningMeta.setText("호스트: " + hostLabel + " / 생성 시각: " + timeText);
-        tvLightningDescription.setText(
-                desc.isEmpty() ? "설명이 없습니다." : desc
-        );
+        tvLightningDescription.setText(desc.isEmpty() ? "설명이 없습니다." : desc);
 
-        // 모임 위치 소개 표시
         if (!locationDesc.isEmpty()) {
             tvLightningLocation.setText("모임 위치: " + locationDesc);
         } else {
             tvLightningLocation.setText("모임 위치: 미정");
         }
 
-        // 루트 텍스트 (위경도 없이 제목/ID만)
         if (!TextUtils.isEmpty(routeId)) {
             String routeLabel = !routeTitle.isEmpty() ? routeTitle : routeId;
             tvLinkedRouteInfo.setText("연결된 루트: " + routeLabel);
-
-            // 루트 geometry를 위해 routes 컬렉션에서 다시 로드
             loadRoute(routeId);
         } else {
             tvLinkedRouteInfo.setText("연결된 루트: 없음");
-            // routeId 없으면 지도에 아무것도 안 그려짐
         }
     }
 
-    // routes/{routeId} 문서에서 polyline 포인트 로드
+    // ---------- 참가자 리스너 & 토글 ----------
+
+    private void startParticipantListener() {
+        db.collection("lightnings")
+                .document(lightningId)
+                .collection("participants")
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Toast.makeText(this,
+                                "참가자 정보를 불러오는 중 오류가 발생했습니다.",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int count = 0;
+                    List<String> names = new ArrayList<>();
+                    boolean joined = false;
+
+                    if (snapshots != null) {
+                        for (DocumentSnapshot doc : snapshots) {
+                            count++;
+                            String nick = doc.getString("nickname");
+                            if (TextUtils.isEmpty(nick)) {
+                                nick = doc.getId();
+                            }
+                            names.add(nick);
+
+                            if (currentUid != null && doc.getId().equals(currentUid)) {
+                                joined = true;
+                            }
+                        }
+                    }
+
+                    isJoined = joined;
+
+                    tvParticipantSummary.setText("참가자: " + count + "명");
+
+                    if (count > 0) {
+                        String joinedNames = TextUtils.join(", ", names);
+                        tvParticipantList.setText("참가자 목록: " + joinedNames);
+                    } else {
+                        tvParticipantList.setText("참가자 목록: 없음");
+                    }
+
+                    if (currentUid != null) {
+                        btnToggleJoin.setText(isJoined ? "참가 취소" : "참가하기");
+                    }
+                });
+    }
+
+    private void toggleJoin() {
+        if (currentUid == null) {
+            Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (TextUtils.isEmpty(lightningId)) {
+            Toast.makeText(this, "번개 정보가 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (isJoined) {
+            // 참가 취소
+            db.collection("lightnings")
+                    .document(lightningId)
+                    .collection("participants")
+                    .document(currentUid)
+                    .delete()
+                    .addOnFailureListener(e -> Toast.makeText(this,
+                            "참가 취소 실패: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show());
+        } else {
+            // 참가
+            String nickToSave = currentNickname;
+            if (TextUtils.isEmpty(nickToSave)) {
+                nickToSave = currentUid;
+            }
+
+            Map<String, Object> p = new HashMap<>();
+            p.put("nickname", nickToSave);
+            p.put("joinedAt", System.currentTimeMillis());
+
+            db.collection("lightnings")
+                    .document(lightningId)
+                    .collection("participants")
+                    .document(currentUid)
+                    .set(p)
+                    .addOnFailureListener(e -> Toast.makeText(this,
+                            "참가 실패: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show());
+        }
+        // isJoined 플래그는 Firestore snapshot에서 다시 설정됨
+    }
+
+    // ---------- 루트 & 지도 ----------
+
     private void loadRoute(String routeId) {
         db.collection("routes")
                 .document(routeId)
@@ -203,7 +338,6 @@ public class LightningDetailActivity extends AppCompatActivity {
             }
         }
 
-        // 혹시 points가 비어 있으면 startLat/endLat로 최소한의 선만
         Double sLat = doc.getDouble("startLat");
         Double sLng = doc.getDouble("startLng");
         Double eLat = doc.getDouble("endLat");
@@ -226,7 +360,6 @@ public class LightningDetailActivity extends AppCompatActivity {
         updateMapIfReady();
     }
 
-    // 지도 초기화
     private void initMap() {
         lightningMapView.start(new MapLifeCycleCallback() {
             @Override
@@ -250,7 +383,6 @@ public class LightningDetailActivity extends AppCompatActivity {
         });
     }
 
-    // mapReady + routeLoaded 둘 다 true일 때 polyline + 핀 그리기
     private void updateMapIfReady() {
         if (!mapReady || !routeLoaded || kakaoMap == null) return;
         if (labelLayer == null || shapeLayer == null) return;
